@@ -19,23 +19,15 @@
 		D92C93482DED8A1B00C7358A /* BeenThere.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeenThere.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D92C935A2DED8A1C00C7358A /* Exceptions for "BeenThere" folder in "BeenThere" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = D92C93472DED8A1B00C7358A /* BeenThere */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D92C934A2DED8A1B00C7358A /* BeenThere */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D92C935A2DED8A1C00C7358A /* Exceptions for "BeenThere" folder in "BeenThere" target */,
-			);
 			path = BeenThere;
+			sourceTree = "<group>";
+		};
+		D9E3A5D02DEDE6C60028B6FA /* Documents */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Documents;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -60,6 +52,7 @@
 		D92C933F2DED8A1B00C7358A = {
 			isa = PBXGroup;
 			children = (
+				D9E3A5D02DEDE6C60028B6FA /* Documents */,
 				D92C934A2DED8A1B00C7358A /* BeenThere */,
 				D92C93492DED8A1B00C7358A /* Products */,
 			);
@@ -90,6 +83,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				D92C934A2DED8A1B00C7358A /* BeenThere */,
+				D9E3A5D02DEDE6C60028B6FA /* Documents */,
 			);
 			name = BeenThere;
 			packageProductDependencies = (
