@@ -13,15 +13,29 @@
 		D92C93682DED8AA500C7358A /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D92C93672DED8AA500C7358A /* FirebaseFirestore */; };
 		D92C936A2DED8AA500C7358A /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D92C93692DED8AA500C7358A /* FirebaseStorage */; };
 		D9E3A5CF2DEDDFDB0028B6FA /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = D9E3A5CE2DEDDFDB0028B6FA /* Kingfisher */; };
+		D9E3F1012DEE08FC00A492A9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = D9E3F1002DEE08FC00A492A9 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D92C93482DED8A1B00C7358A /* BeenThere.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeenThere.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D9E3A5D62DEDED550028B6FA /* Exceptions for "BeenThere" folder in "BeenThere" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D92C93472DED8A1B00C7358A /* BeenThere */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D92C934A2DED8A1B00C7358A /* BeenThere */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D9E3A5D62DEDED550028B6FA /* Exceptions for "BeenThere" folder in "BeenThere" target */,
+			);
 			path = BeenThere;
 			sourceTree = "<group>";
 		};
@@ -38,6 +52,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D9E3A5CF2DEDDFDB0028B6FA /* Kingfisher in Frameworks */,
+				D9E3F1012DEE08FC00A492A9 /* Lottie in Frameworks */,
 				D92C93622DED8AA500C7358A /* FirebaseAnalytics in Frameworks */,
 				D92C93682DED8AA500C7358A /* FirebaseFirestore in Frameworks */,
 				D92C93662DED8AA500C7358A /* FirebaseCore in Frameworks */,
@@ -93,6 +108,7 @@
 				D92C93672DED8AA500C7358A /* FirebaseFirestore */,
 				D92C93692DED8AA500C7358A /* FirebaseStorage */,
 				D9E3A5CE2DEDDFDB0028B6FA /* Kingfisher */,
+				D9E3F1002DEE08FC00A492A9 /* Lottie */,
 			);
 			productName = BeenThere;
 			productReference = D92C93482DED8A1B00C7358A /* BeenThere.app */;
@@ -125,6 +141,7 @@
 			packageReferences = (
 				D92C93602DED8AA500C7358A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D9E3A5CD2DEDDFDB0028B6FA /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				D9E3F0FF2DEE08FC00A492A9 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D92C93492DED8A1B00C7358A /* Products */;
@@ -374,6 +391,14 @@
 				minimumVersion = 8.3.2;
 			};
 		};
+		D9E3F0FF2DEE08FC00A492A9 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -406,6 +431,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D9E3A5CD2DEDDFDB0028B6FA /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		D9E3F1002DEE08FC00A492A9 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9E3F0FF2DEE08FC00A492A9 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

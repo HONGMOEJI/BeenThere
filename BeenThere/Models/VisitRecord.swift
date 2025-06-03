@@ -2,46 +2,108 @@
 //  VisitRecord.swift
 //  BeenThere
 //
-//  Firestore에 저장할 방문 기록(VisitRecord) 모델
-//  - users/{uid}/visitRecords/{contentId} 경로에 저장
-//  BeenThere/Models/VisitRecord.swift
+//  방문 기록 데이터 모델
 //
 
 import Foundation
 import FirebaseFirestore
 
-/// Firestore에 저장할 Visit Record 모델
 struct VisitRecord: Codable, Identifiable {
-    /// Firestore 도큐먼트 ID (contentId로 설정)
     @DocumentID var id: String?
-    /// TourAPI에서 받아온 콘텐츠 ID
     let contentId: String
-    /// 관광지 제목
-    let title: String
-    /// 사용자가 방문한 시각 (서버 타임스탬프 사용 권장)
+    let placeTitle: String
+    let placeAddress: String
     let visitedAt: Date
-    /// 관광지 위도 (Double)
-    let lat: Double
-    /// 관광지 경도 (Double)
-    let lng: Double
-    /// 썸네일 이미지 URL (옵셔널)
-    let thumbnail: String?
-
-    /// 생성자: contentId를 id로 설정하여 중복 저장 방지
-    init(
-        contentId: String,
-        title: String,
-        visitedAt: Date = Date(),
-        lat: Double,
-        lng: Double,
-        thumbnail: String? = nil
-    ) {
-        self.id = contentId
+    let rating: Int // 1-5 별점
+    let content: String // 방문 소감
+    var imageUrls: [String] = [] // Firebase Storage URLs
+    let weather: WeatherType?
+    let mood: MoodType?
+    let tags: [String]
+    let createdAt: Date
+    var updatedAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case contentId
+        case placeTitle
+        case placeAddress
+        case visitedAt
+        case rating
+        case content
+        case imageUrls
+        case weather
+        case mood
+        case tags
+        case createdAt
+        case updatedAt
+    }
+    
+    init(contentId: String, placeTitle: String, placeAddress: String, visitedAt: Date, rating: Int, content: String, imageUrls: [String] = [], weather: WeatherType? = nil, mood: MoodType? = nil, tags: [String] = []) {
         self.contentId = contentId
-        self.title = title
+        self.placeTitle = placeTitle
+        self.placeAddress = placeAddress
         self.visitedAt = visitedAt
-        self.lat = lat
-        self.lng = lng
-        self.thumbnail = thumbnail
+        self.rating = rating
+        self.content = content
+        self.imageUrls = imageUrls
+        self.weather = weather
+        self.mood = mood
+        self.tags = tags
+        self.createdAt = Date()
+        self.updatedAt = Date()
+    }
+}
+
+enum WeatherType: String, Codable, CaseIterable {
+    case sunny = "sunny"
+    case cloudy = "cloudy"
+    case rainy = "rainy"
+    case snowy = "snowy"
+    
+    var emoji: String {
+        switch self {
+        case .sunny: return "☀️"
+        case .cloudy: return "☁️"
+        case .rainy: return "🌧️"
+        case .snowy: return "❄️"
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .sunny: return "맑음"
+        case .cloudy: return "흐림"
+        case .rainy: return "비"
+        case .snowy: return "눈"
+        }
+    }
+}
+
+enum MoodType: String, Codable, CaseIterable {
+    case happy = "happy"
+    case excited = "excited"
+    case relaxed = "relaxed"
+    case thoughtful = "thoughtful"
+    case romantic = "romantic"
+    
+    var emoji: String {
+        switch self {
+        case .happy: return "😊"
+        case .excited: return "🤩"
+        case .relaxed: return "😌"
+        case .thoughtful: return "🤔"
+        case .romantic: return "🥰"
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .happy: return "행복해요"
+        case .excited: return "신나요"
+        case .relaxed: return "편안해요"
+        case .thoughtful: return "생각이 많아요"
+        case .romantic: return "설레요"
+        }
     }
 }

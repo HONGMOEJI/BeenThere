@@ -95,4 +95,60 @@ extension UIColor {
     
     /// 구분선(color) – 입력 폼과 버튼 사이를 나누는 라인 색
     static let themeSeparator = UIColor(white: 0.60, alpha: 1)
+    
+    // ────────────────────────────────────────────────────────────────────────────
+    // MARK: - MyRecords 화면 전용 색상 (새로 추가)
+    
+    /// 카드 배경 색상 (MyRecords의 기록 카드들)
+    static let themeCardBackground = UIColor(white: 0.12, alpha: 1)
+    
+    /// 카드 테두리 색상
+    static let themeCardBorder = UIColor(white: 0.18, alpha: 1)
+    
+    /// 날짜 선택 컨테이너 배경
+    static let themeDateContainer = UIColor(white: 0.08, alpha: 1)
+    
+    /// 활성화된 날짜 버튼 배경 (오늘 버튼 등)
+    static let themeDateActive = UIColor.primaryBlue.withAlphaComponent(0.15)
+    
+    /// 빈 상태 아이콘 색상
+    static let themeEmptyIcon = UIColor(white: 0.40, alpha: 1)
+    
+    /// 별점 색상 (선택됨)
+    static let themeRatingSelected = UIColor.systemYellow
+    
+    /// 별점 색상 (선택 안됨)
+    static let themeRatingUnselected = UIColor(white: 0.50, alpha: 1)
+    
+    /// 태그 배경 색상
+    static let themeTagBackground = UIColor.primaryBlue.withAlphaComponent(0.15)
+    
+    /// 태그 텍스트 색상
+    static let themeTagText = UIColor.primaryBlue
+    
+    /// 그라데이션 오버레이 (카드 이미지 위)
+    static let themeGradientTop = UIColor.clear
+    static let themeGradientBottom = UIColor.black.withAlphaComponent(0.7)
+    
+    /// 로딩 인디케이터 색상
+    static let themeLoading = UIColor(white: 0.70, alpha: 1)
+    
+    /// 새로고침 버튼 색상
+    static let themeRefresh = UIColor.themeTextSecondary
+    
+    // ────────────────────────────────────────────────────────────────────────────
+    // MARK: - RecordDetail 화면 전용 색상 (미리 추가)
+    
+    /// 상세 뷰 배경
+    static let themeDetailBackground = UIColor(white: 0.08, alpha: 1)
+    
+    /// 편집/삭제 버튼 색상
+    static let themeEditButton = UIColor.primaryBlue
+    static let themeDeleteButton = UIColor.systemRed
+    
+    /// 이미지 갤러리 배경
+    static let themeImageGallery = UIColor(white: 0.05, alpha: 1)
+    
+    /// 메타데이터 섹션 배경 (날짜, 별점, 태그 등)
+    static let themeMetaBackground = UIColor(white: 0.12, alpha: 1)
 }

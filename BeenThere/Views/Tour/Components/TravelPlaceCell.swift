@@ -3,7 +3,7 @@
 //  BeenThere
 //
 //  그레이스케일 테마 여행지 카드 셀
-//  - 거리/전화번호 박스 디자인 개선, 타이틀과 거리 정렬
+//  - 방문 횟수 뱃지만 유지, 방문완료 뱃지 제거
 //
 
 import UIKit
@@ -24,7 +24,7 @@ class TravelPlaceCell: UICollectionViewCell {
         static let textTertiary = UIColor.themeTextPlaceholder
         
         static let accentColor = UIColor(white: 0.85, alpha: 1.0)
-        static let visitedColor = UIColor(white: 0.90, alpha: 1.0)
+        static let visitCountColor = UIColor.systemGreen
         
         static let cornerRadius: CGFloat = 20
         static let imageHeight: CGFloat = 200
@@ -110,19 +110,33 @@ class TravelPlaceCell: UICollectionViewCell {
         return label
     }()
     
-    private let visitButton: UIButton = {
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.filled()
-        config.cornerStyle = .capsule
-        config.baseBackgroundColor = Design.surfaceColor.withAlphaComponent(0.9)
-        config.baseForegroundColor = Design.textSecondary
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        config.image = UIImage(systemName: "plus.circle.fill", withConfiguration: symbolConfig)
-        button.configuration = config
-        button.layer.borderWidth = 1
-        button.layer.borderColor = Design.borderColor.cgColor
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    // 방문 횟수 뱃지
+    private let visitCountBadge: UIView = {
+        let view = UIView()
+        view.backgroundColor = Design.visitCountColor.withAlphaComponent(0.9)
+        view.layer.cornerRadius = 12
+        view.layer.borderWidth = 1
+        view.layer.borderColor = Design.visitCountColor.cgColor
+        view.isHidden = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private let visitCountIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "checkmark.circle.fill")
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .white
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private let visitCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let textContainer: UIView = {
@@ -147,7 +161,6 @@ class TravelPlaceCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    // 전화번호 표시 레이블
     private let phoneLabel: UILabel = {
         let label = UILabel()
         label.font = .bodySmall
@@ -169,35 +182,9 @@ class TravelPlaceCell: UICollectionViewCell {
     }()
     private let distanceShortLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold) // 더 크게!
+        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
         label.textColor = Design.textPrimary
         label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    // 방문 완료
-    private let visitedMarker: UIView = {
-        let view = UIView()
-        view.backgroundColor = Design.visitedColor
-        view.layer.cornerRadius = 10
-        view.isHidden = true
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    private let visitedIcon: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "checkmark")
-        imageView.tintColor = Design.backgroundColor
-        imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
-    }()
-    private let visitedLabel: UILabel = {
-        let label = UILabel()
-        label.text = "방문완료"
-        label.font = .labelSmall
-        label.textColor = Design.backgroundColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -206,7 +193,7 @@ class TravelPlaceCell: UICollectionViewCell {
     private lazy var titleRowStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [titleLabel, distanceContainer])
         stack.axis = .horizontal
-        stack.alignment = .center // 수직 중앙 정렬!
+        stack.alignment = .center
         stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
@@ -243,7 +230,7 @@ class TravelPlaceCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        // 🔥 동적으로 생성된 제약 조건들 정리
+        // 동적으로 생성된 제약 조건들 정리
         phoneLabel.constraints.forEach { constraint in
             if constraint.firstAttribute == .bottom {
                 constraint.isActive = false
@@ -263,13 +250,10 @@ class TravelPlaceCell: UICollectionViewCell {
         distanceShortLabel.text = nil
         categoryLabel.text = nil
         categoryIcon.image = nil
-        visitedMarker.isHidden = true
+        visitCountBadge.isHidden = true
+        visitCountLabel.text = nil
         distanceContainer.isHidden = false
         categoryTag.isHidden = false
-        var config = visitButton.configuration
-        config?.image = UIImage(systemName: "plus.circle.fill")
-        config?.baseForegroundColor = Design.textSecondary
-        visitButton.configuration = config
         toggleCallback = nil
     }
     
@@ -283,17 +267,17 @@ class TravelPlaceCell: UICollectionViewCell {
         contentContainer.addSubview(categoryTag)
         categoryTag.addSubview(categoryIcon)
         categoryTag.addSubview(categoryLabel)
-        contentContainer.addSubview(visitButton)
+        
+        // 방문 횟수 뱃지 추가
+        contentContainer.addSubview(visitCountBadge)
+        visitCountBadge.addSubview(visitCountIcon)
+        visitCountBadge.addSubview(visitCountLabel)
+        
         contentContainer.addSubview(textContainer)
-        // 타이틀 행을 textContainer에 먼저 추가
         textContainer.addSubview(titleRowStack)
         distanceContainer.addSubview(distanceShortLabel)
         textContainer.addSubview(addressLabel)
         textContainer.addSubview(phoneLabel)
-        contentContainer.addSubview(visitedMarker)
-        visitedMarker.addSubview(visitedIcon)
-        visitedMarker.addSubview(visitedLabel)
-        visitButton.addTarget(self, action: #selector(visitButtonTapped), for: .touchUpInside)
     }
     
     private func setupConstraints() {
@@ -330,17 +314,25 @@ class TravelPlaceCell: UICollectionViewCell {
             categoryLabel.centerYAnchor.constraint(equalTo: categoryTag.centerYAnchor),
             categoryLabel.trailingAnchor.constraint(equalTo: categoryTag.trailingAnchor, constant: -6),
             
-            // 방문 버튼
-            visitButton.topAnchor.constraint(equalTo: contentContainer.topAnchor, constant: 12),
-            visitButton.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor, constant: -12),
-            visitButton.widthAnchor.constraint(equalToConstant: 40),
-            visitButton.heightAnchor.constraint(equalToConstant: 40),
+            // 방문 횟수 뱃지 (우측 상단)
+            visitCountBadge.topAnchor.constraint(equalTo: contentContainer.topAnchor, constant: 12),
+            visitCountBadge.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor, constant: -12),
+            visitCountBadge.heightAnchor.constraint(equalToConstant: 24),
             
-            // 🔥 텍스트 컨테이너 - 하단을 contentContainer와 정확히 연결
+            visitCountIcon.leadingAnchor.constraint(equalTo: visitCountBadge.leadingAnchor, constant: 6),
+            visitCountIcon.centerYAnchor.constraint(equalTo: visitCountBadge.centerYAnchor),
+            visitCountIcon.widthAnchor.constraint(equalToConstant: 12),
+            visitCountIcon.heightAnchor.constraint(equalToConstant: 12),
+            
+            visitCountLabel.leadingAnchor.constraint(equalTo: visitCountIcon.trailingAnchor, constant: 4),
+            visitCountLabel.centerYAnchor.constraint(equalTo: visitCountBadge.centerYAnchor),
+            visitCountLabel.trailingAnchor.constraint(equalTo: visitCountBadge.trailingAnchor, constant: -6),
+            
+            // 텍스트 컨테이너
             textContainer.topAnchor.constraint(equalTo: placeImageView.bottomAnchor, constant: Design.contentPadding),
             textContainer.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor, constant: Design.contentPadding),
             textContainer.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor, constant: -Design.contentPadding),
-            textContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -Design.contentPadding), // lessThanOrEqualTo 제거!
+            textContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -Design.contentPadding),
             
             // 타이틀+거리 스택
             titleRowStack.topAnchor.constraint(equalTo: textContainer.topAnchor),
@@ -359,34 +351,21 @@ class TravelPlaceCell: UICollectionViewCell {
             addressLabel.leadingAnchor.constraint(equalTo: textContainer.leadingAnchor),
             addressLabel.trailingAnchor.constraint(equalTo: textContainer.trailingAnchor),
             
-            // 🔥 전화번호 - 하단 제약 조건을 조건부로 설정
+            // 전화번호
             phoneLabel.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 2),
             phoneLabel.leadingAnchor.constraint(equalTo: textContainer.leadingAnchor),
             phoneLabel.trailingAnchor.constraint(equalTo: textContainer.trailingAnchor),
-            // phoneLabel.bottomAnchor 제약은 configure에서 동적으로 설정
-            
-            // 방문 완료 마커
-            visitedMarker.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor, constant: -16),
-            visitedMarker.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -16),
-            visitedMarker.heightAnchor.constraint(equalToConstant: 20),
-            visitedIcon.leadingAnchor.constraint(equalTo: visitedMarker.leadingAnchor, constant: 6),
-            visitedIcon.centerYAnchor.constraint(equalTo: visitedMarker.centerYAnchor),
-            visitedIcon.widthAnchor.constraint(equalToConstant: 10),
-            visitedIcon.heightAnchor.constraint(equalToConstant: 10),
-            visitedLabel.leadingAnchor.constraint(equalTo: visitedIcon.trailingAnchor, constant: 4),
-            visitedLabel.centerYAnchor.constraint(equalTo: visitedMarker.centerYAnchor),
-            visitedLabel.trailingAnchor.constraint(equalTo: visitedMarker.trailingAnchor, constant: -6),
-                ])
+        ])
     }
     
     // MARK: - Configuration
     
-    func configure(with site: TourSiteItem, currentLocation: CLLocation?, isVisited: Bool, onToggle: @escaping () -> Void) {
+    func configure(with site: TourSiteItem, currentLocation: CLLocation?, visitCount: Int = 0, onToggle: @escaping () -> Void) {
         toggleCallback = onToggle
         titleLabel.text = site.title
         addressLabel.text = site.fullAddress ?? "주소 정보 없음"
         
-        // 🔥 기존 하단 제약 조건 제거
+        // 기존 하단 제약 조건 제거
         phoneLabel.constraints.forEach { constraint in
             if constraint.firstAttribute == .bottom && constraint.secondItem === textContainer {
                 constraint.isActive = false
@@ -397,16 +376,14 @@ class TravelPlaceCell: UICollectionViewCell {
         if let phone = site.phoneNumber, !phone.isEmpty {
             phoneLabel.text = "전화: \(phone)"
             phoneLabel.isHidden = false
-            // 전화번호가 있으면 phoneLabel을 하단에 고정
             phoneLabel.bottomAnchor.constraint(equalTo: textContainer.bottomAnchor).isActive = true
         } else {
             phoneLabel.text = nil
             phoneLabel.isHidden = true
-            // 전화번호가 없으면 addressLabel을 하단에 고정
             addressLabel.bottomAnchor.constraint(equalTo: textContainer.bottomAnchor).isActive = true
         }
         
-        // 거리만 박스 안에
+        // 거리 표시
         if let current = currentLocation, let lat = site.latitude, let lng = site.longitude {
             let placeLoc = CLLocation(latitude: lat, longitude: lng)
             let dist = current.distance(from: placeLoc)
@@ -422,10 +399,32 @@ class TravelPlaceCell: UICollectionViewCell {
             distanceContainer.isHidden = true
         }
         
+        // 방문 횟수 뱃지 설정
+        configureVisitCountBadge(visitCount)
+        
         configureImage(with: site)
         configureCategory(with: site)
-        configureVisitedState(isVisited)
         animateAppearance()
+    }
+    
+    // 방문 횟수 뱃지 설정 메서드
+    private func configureVisitCountBadge(_ visitCount: Int) {
+        if visitCount > 0 {
+            visitCountBadge.isHidden = false
+            visitCountLabel.text = "\(visitCount)번 방문"
+            
+            // 방문 횟수에 따라 애니메이션 효과
+            UIView.animate(withDuration: 0.3, delay: 0.2, options: [.curveEaseOut]) {
+                self.visitCountBadge.transform = CGAffineTransform(scaleX: 1.05, y: 1.05)
+            } completion: { _ in
+                UIView.animate(withDuration: 0.2) {
+                    self.visitCountBadge.transform = .identity
+                }
+            }
+        } else {
+            visitCountBadge.isHidden = true
+            visitCountLabel.text = nil
+        }
     }
     
     private func configureImage(with site: TourSiteItem) {
@@ -453,6 +452,7 @@ class TravelPlaceCell: UICollectionViewCell {
             placeImageView.image = createPlaceholderImage()
         }
     }
+    
     private func createPlaceholderImage() -> UIImage? {
         let size = CGSize(width: 400, height: 300)
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
@@ -479,6 +479,7 @@ class TravelPlaceCell: UICollectionViewCell {
         UIGraphicsEndImageContext()
         return image
     }
+    
     private func configureCategory(with site: TourSiteItem) {
         if let typeName = site.contentTypeName {
             categoryLabel.text = typeName
@@ -488,19 +489,7 @@ class TravelPlaceCell: UICollectionViewCell {
             categoryTag.isHidden = true
         }
     }
-    private func configureVisitedState(_ isVisited: Bool) {
-        visitedMarker.isHidden = !isVisited
-        var config = visitButton.configuration
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-        if isVisited {
-            config?.image = UIImage(systemName: "checkmark.circle.fill", withConfiguration: symbolConfig)
-            config?.baseForegroundColor = Design.visitedColor
-        } else {
-            config?.image = UIImage(systemName: "plus.circle.fill", withConfiguration: symbolConfig)
-            config?.baseForegroundColor = Design.textSecondary
-        }
-        visitButton.configuration = config
-    }
+    
     private func animateAppearance() {
         alpha = 0
         transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
@@ -515,22 +504,6 @@ class TravelPlaceCell: UICollectionViewCell {
         }
     }
     
-    // MARK: - Actions
-    
-    @objc private func visitButtonTapped() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.prepare()
-        generator.impactOccurred()
-        UIView.animate(withDuration: 0.1, animations: {
-            self.visitButton.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
-        }) { _ in
-            UIView.animate(withDuration: 0.1) {
-                self.visitButton.transform = .identity
-            }
-        }
-        toggleCallback?()
-    }
-    
     // MARK: - Touch Events
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -539,12 +512,14 @@ class TravelPlaceCell: UICollectionViewCell {
             self.cardContainer.transform = CGAffineTransform(scaleX: 0.98, y: 0.98)
         }
     }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         UIView.animate(withDuration: 0.2, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.3) {
             self.cardContainer.transform = .identity
         }
     }
+    
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesCancelled(touches, with: event)
         UIView.animate(withDuration: 0.2, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.3) {

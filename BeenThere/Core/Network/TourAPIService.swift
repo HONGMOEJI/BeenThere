@@ -175,20 +175,12 @@ final class TourAPIService {
     // MARK: - 4) 상세 정보 조회
     func fetchDetailInfo(
         contentId: String,
-        contentTypeId: Int = APIConstants.ContentTypes.tourSpot,
         useCache: Bool = true
     ) async throws -> TourSiteDetail? {
         var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.detailCommon)
-        var queryItems = createBaseQueryItems(contentTypeId: contentTypeId)
+        var queryItems = createBaseQueryItems()
         queryItems.append(contentsOf: [
             .init(name: APIConstants.TourAPI.Parameters.contentId, value: contentId),
-            .init(name: "defaultYN", value: "Y"),
-            .init(name: "firstImageYN", value: "Y"),
-            .init(name: "areacodeYN", value: "Y"),
-            .init(name: "catcodeYN", value: "Y"),
-            .init(name: "addrinfoYN", value: "Y"),
-            .init(name: "mapinfoYN", value: "Y"),
-            .init(name: "overviewYN", value: "Y")
         ])
         urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
         guard let url = urlComponents.url else {
@@ -229,11 +221,10 @@ final class TourAPIService {
     // MARK: - 5) 이미지 정보 조회
     func fetchImages(
         contentId: String,
-        contentTypeId: Int = APIConstants.ContentTypes.tourSpot,
         useCache: Bool = true
     ) async throws -> [TourSiteImage] {
         var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.detailImage)
-        var queryItems = createBaseQueryItems(contentTypeId: contentTypeId)
+        var queryItems = createBaseQueryItems()
         queryItems.append(contentsOf: [
             .init(name: APIConstants.TourAPI.Parameters.contentId, value: contentId),
             .init(name: "imageYN", value: "Y")
@@ -274,53 +265,53 @@ final class TourAPIService {
         }
     }
 
-    // MARK: - 6) 지역 코드 조회 (areaCode2)
-    func fetchAreaCodes(areaCode: Int? = nil, useCache: Bool = true) async throws -> [AreaCode] {
-        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.areaCode)
-        var queryItems: [URLQueryItem] = [
-            .init(name: "serviceKey", value: serviceKey),
-            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
-            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
-            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType),
-            .init(name: APIConstants.TourAPI.Parameters.numOfRows, value: "100")
-        ]
-        if let aCode = areaCode {
-            queryItems.append(.init(name: APIConstants.TourAPI.Parameters.areaCode, value: "\(aCode)"))
-        }
-        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
-        guard let url = urlComponents.url else {
-            throw APIError.invalidURL
-        }
-        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
-            do {
-                let decoded = try JSONDecoder().decode(AreaCodeResponse.self, from: cachedData)
-                return decoded.response.body.items.item
-            } catch {
-                print("캐시 데이터 디코딩 실패: \(error)")
-            }
-        }
-        do {
-            let (data, response) = try await retryableDataTask(for: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                guard 200...299 ~= httpResponse.statusCode else {
-                    throw APIError.httpError(httpResponse.statusCode)
-                }
-            }
-            let decoded = try JSONDecoder().decode(AreaCodeResponse.self, from: data)
-            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
-                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
-            }
-            if useCache {
-                cacheService.cache(data, for: url.absoluteString, cost: data.count)
-            }
-            return decoded.response.body.items.item
-        } catch let error as APIError {
-            throw error
-        } catch {
-            print("지역 코드 조회 실패: \(error)")
-            throw APIError.networkError(error)
-        }
-    }
+//    // MARK: - 6) 지역 코드 조회 (areaCode2)
+//    func fetchAreaCodes(areaCode: Int? = nil, useCache: Bool = true) async throws -> [AreaCode] {
+//        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.areaCode)
+//        var queryItems: [URLQueryItem] = [
+//            .init(name: "serviceKey", value: serviceKey),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
+//            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType),
+//            .init(name: APIConstants.TourAPI.Parameters.numOfRows, value: "100")
+//        ]
+//        if let aCode = areaCode {
+//            queryItems.append(.init(name: APIConstants.TourAPI.Parameters.areaCode, value: "\(aCode)"))
+//        }
+//        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
+//        guard let url = urlComponents.url else {
+//            throw APIError.invalidURL
+//        }
+//        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
+//            do {
+//                let decoded = try JSONDecoder().decode(AreaCodeResponse.self, from: cachedData)
+//                return decoded.response.body.items.item
+//            } catch {
+//                print("캐시 데이터 디코딩 실패: \(error)")
+//            }
+//        }
+//        do {
+//            let (data, response) = try await retryableDataTask(for: url)
+//            if let httpResponse = response as? HTTPURLResponse {
+//                guard 200...299 ~= httpResponse.statusCode else {
+//                    throw APIError.httpError(httpResponse.statusCode)
+//                }
+//            }
+//            let decoded = try JSONDecoder().decode(AreaCodeResponse.self, from: data)
+//            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
+//                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
+//            }
+//            if useCache {
+//                cacheService.cache(data, for: url.absoluteString, cost: data.count)
+//            }
+//            return decoded.response.body.items.item
+//        } catch let error as APIError {
+//            throw error
+//        } catch {
+//            print("지역 코드 조회 실패: \(error)")
+//            throw APIError.networkError(error)
+//        }
+//    }
 
     // MARK: - 7) 반복정보 조회 (detailInfo2)
     func fetchDetailInfo2(
@@ -366,52 +357,52 @@ final class TourAPIService {
         }
     }
 
-    // MARK: - 8) 분류체계 코드 조회 (lclsSystmCode2)
-    func fetchClassificationCodes(dscCd: String? = nil, useCache: Bool = true) async throws -> [ClassificationCode] {
-        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.lclsSystmCode)
-        var queryItems: [URLQueryItem] = [
-            .init(name: "serviceKey", value: serviceKey),
-            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
-            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
-            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType)
-        ]
-        if let code = dscCd {
-            queryItems.append(.init(name: "dscCd", value: code))
-        }
-        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
-        guard let url = urlComponents.url else {
-            throw APIError.invalidURL
-        }
-        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
-            do {
-                let decoded = try JSONDecoder().decode(ClassificationCodeResponse.self, from: cachedData)
-                return decoded.response.body.items.item
-            } catch {
-                print("캐시 데이터 디코딩 실패: \(error)")
-            }
-        }
-        do {
-            let (data, response) = try await retryableDataTask(for: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                guard 200...299 ~= httpResponse.statusCode else {
-                    throw APIError.httpError(httpResponse.statusCode)
-                }
-            }
-            let decoded = try JSONDecoder().decode(ClassificationCodeResponse.self, from: data)
-            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
-                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
-            }
-            if useCache {
-                cacheService.cache(data, for: url.absoluteString, cost: data.count)
-            }
-            return decoded.response.body.items.item
-        } catch let error as APIError {
-            throw error
-        } catch {
-            print("분류체계 코드 조회 실패: \(error)")
-            throw APIError.networkError(error)
-        }
-    }
+//    // MARK: - 8) 분류체계 코드 조회 (lclsSystmCode2)
+//    func fetchClassificationCodes(dscCd: String? = nil, useCache: Bool = true) async throws -> [ClassificationCode] {
+//        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.lclsSystmCode)
+//        var queryItems: [URLQueryItem] = [
+//            .init(name: "serviceKey", value: serviceKey),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
+//            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType)
+//        ]
+//        if let code = dscCd {
+//            queryItems.append(.init(name: "dscCd", value: code))
+//        }
+//        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
+//        guard let url = urlComponents.url else {
+//            throw APIError.invalidURL
+//        }
+//        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
+//            do {
+//                let decoded = try JSONDecoder().decode(ClassificationCodeResponse.self, from: cachedData)
+//                return decoded.response.body.items.item
+//            } catch {
+//                print("캐시 데이터 디코딩 실패: \(error)")
+//            }
+//        }
+//        do {
+//            let (data, response) = try await retryableDataTask(for: url)
+//            if let httpResponse = response as? HTTPURLResponse {
+//                guard 200...299 ~= httpResponse.statusCode else {
+//                    throw APIError.httpError(httpResponse.statusCode)
+//                }
+//            }
+//            let decoded = try JSONDecoder().decode(ClassificationCodeResponse.self, from: data)
+//            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
+//                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
+//            }
+//            if useCache {
+//                cacheService.cache(data, for: url.absoluteString, cost: data.count)
+//            }
+//            return decoded.response.body.items.item
+//        } catch let error as APIError {
+//            throw error
+//        } catch {
+//            print("분류체계 코드 조회 실패: \(error)")
+//            throw APIError.networkError(error)
+//        }
+//    }
 
     // MARK: - 9) 관광정보 동기화 목록 조회 (areaBasedSyncList2)
     func fetchSyncList(
@@ -448,53 +439,53 @@ final class TourAPIService {
         return try await performRequest(url: url, useCache: false)
     }
 
-    // MARK: - 10) 법정동코드 조회 (ldongCode2)
-    func fetchLegalDistrictCodes(regionCode: String? = nil, useCache: Bool = true) async throws -> [LegalDistrictCode] {
-        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.ldongCode)
-        var queryItems: [URLQueryItem] = [
-            .init(name: "serviceKey", value: serviceKey),
-            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
-            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
-            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType),
-            .init(name: APIConstants.TourAPI.Parameters.numOfRows, value: "100")
-        ]
-        if let code = regionCode {
-            queryItems.append(.init(name: "regionCode", value: code))
-        }
-        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
-        guard let url = urlComponents.url else {
-            throw APIError.invalidURL
-        }
-        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
-            do {
-                let decoded = try JSONDecoder().decode(LegalDistrictCodeResponse.self, from: cachedData)
-                return decoded.response.body.items.item
-            } catch {
-                print("캐시 데이터 디코딩 실패: \(error)")
-            }
-        }
-        do {
-            let (data, response) = try await retryableDataTask(for: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                guard 200...299 ~= httpResponse.statusCode else {
-                    throw APIError.httpError(httpResponse.statusCode)
-                }
-            }
-            let decoded = try JSONDecoder().decode(LegalDistrictCodeResponse.self, from: data)
-            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
-                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
-            }
-            if useCache {
-                cacheService.cache(data, for: url.absoluteString, cost: data.count)
-            }
-            return decoded.response.body.items.item
-        } catch let error as APIError {
-            throw error
-        } catch {
-            print("법정동코드 조회 실패: \(error)")
-            throw APIError.networkError(error)
-        }
-    }
+//    // MARK: - 10) 법정동코드 조회 (ldongCode2)
+//    func fetchLegalDistrictCodes(regionCode: String? = nil, useCache: Bool = true) async throws -> [LegalDistrictCode] {
+//        var urlComponents = try createUrlComponents(endpoint: APIConstants.TourAPI.Endpoints.ldongCode)
+//        var queryItems: [URLQueryItem] = [
+//            .init(name: "serviceKey", value: serviceKey),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileOS, value: mobileOS),
+//            .init(name: APIConstants.TourAPI.Parameters.mobileApp, value: mobileApp),
+//            .init(name: APIConstants.TourAPI.Parameters.type, value: responseType),
+//            .init(name: APIConstants.TourAPI.Parameters.numOfRows, value: "100")
+//        ]
+//        if let code = regionCode {
+//            queryItems.append(.init(name: "regionCode", value: code))
+//        }
+//        urlComponents.percentEncodedQuery = percentEncodedQuery(queryItems)
+//        guard let url = urlComponents.url else {
+//            throw APIError.invalidURL
+//        }
+//        if useCache, let cachedData = cacheService.retrieveData(for: url.absoluteString) {
+//            do {
+//                let decoded = try JSONDecoder().decode(LegalDistrictCodeResponse.self, from: cachedData)
+//                return decoded.response.body.items.item
+//            } catch {
+//                print("캐시 데이터 디코딩 실패: \(error)")
+//            }
+//        }
+//        do {
+//            let (data, response) = try await retryableDataTask(for: url)
+//            if let httpResponse = response as? HTTPURLResponse {
+//                guard 200...299 ~= httpResponse.statusCode else {
+//                    throw APIError.httpError(httpResponse.statusCode)
+//                }
+//            }
+//            let decoded = try JSONDecoder().decode(LegalDistrictCodeResponse.self, from: data)
+//            if let errorCode = decoded.response.header?.resultCode, errorCode != "0000" {
+//                throw APIError.apiError(errorCode, decoded.response.header?.resultMsg ?? "알 수 없는 오류")
+//            }
+//            if useCache {
+//                cacheService.cache(data, for: url.absoluteString, cost: data.count)
+//            }
+//            return decoded.response.body.items.item
+//        } catch let error as APIError {
+//            throw error
+//        } catch {
+//            print("법정동코드 조회 실패: \(error)")
+//            throw APIError.networkError(error)
+//        }
+//    }
 
     // MARK: - Private Helper Methods
 
