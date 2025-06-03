@@ -468,12 +468,10 @@ class AuthViewController: UIViewController {
         }
     }
     
-    /// 로그인 성공 후 MainViewController로 전환
     private func transitionToMain() {
-        let mainVC = MainViewController()
-        let navVC = UINavigationController(rootViewController: mainVC)
-        navVC.modalPresentationStyle = .fullScreen
-        present(navVC, animated: true)
+        let tabBar = MainTabBarController()
+        tabBar.modalPresentationStyle = .fullScreen
+        present(tabBar, animated: true)
     }
     
     private func showAlert(_ title: String, _ message: String) {
