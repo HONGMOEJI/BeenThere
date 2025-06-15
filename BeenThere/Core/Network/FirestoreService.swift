@@ -2,7 +2,7 @@
 //  FirestoreService.swift
 //  BeenThere
 //
-//  방문 기록 파이어스토어 서비스 (날짜 범위 쿼리 포함)
+//  방문 기록 파이어스토어 서비스 (프로필 이미지 업로드 기능 추가)
 //
 
 import Foundation
@@ -23,7 +23,7 @@ final class FirestoreService {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd_HHmmss"
         formatter.timeZone = TimeZone.current
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: "ko_KR")
         return formatter
     }
 
@@ -148,7 +148,7 @@ final class FirestoreService {
         return records
     }
 
-    // MARK: - 날짜 범위 내 기록 조회 (🆕)
+    // MARK: - 날짜 범위 내 기록 조회
     /// 특정 기간에 방문한 모든 기록 조회 (start <= visitedAt < end+1d)
     func fetchRecordsForRange(userId: String, start: Date, end: Date) async throws -> [VisitRecord] {
         let calendar = Calendar.current
@@ -199,7 +199,76 @@ final class FirestoreService {
         return records
     }
     
-    /// 사용자의 모든 데이터 삭제 (계정 삭제용)
+    // MARK: - 프로필 이미지 관련 메서드 (🆕 추가)
+    
+    /// 프로필 이미지 업로드 및 Firebase Auth 프로필 업데이트
+    func uploadProfileImage(userId: String, image: UIImage) async throws -> String {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            throw FirestoreError.imageCompressionFailed
+        }
+        
+        let fileName = "profile_\(Int(Date().timeIntervalSince1970)).jpg"
+        let storageRef = storage.reference()
+            .child("users")
+            .child(userId)
+            .child("profile")
+            .child(fileName)
+        
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+        
+        // 기존 프로필 이미지가 있다면 삭제
+        try await deleteExistingProfileImage(userId: userId)
+        
+        // 새 이미지 업로드
+        _ = try await storageRef.putDataAsync(imageData, metadata: metadata)
+        let downloadURL = try await storageRef.downloadURL()
+        
+        return downloadURL.absoluteString
+    }
+    
+    /// 기존 프로필 이미지 삭제
+    func deleteExistingProfileImage(userId: String) async throws {
+        guard let user = Auth.auth().currentUser,
+              let photoURL = user.photoURL else { return }
+        
+        // Firebase Storage URL인지 확인
+        if photoURL.absoluteString.contains("firebasestorage.googleapis.com") {
+            let storageRef = storage.reference(forURL: photoURL.absoluteString)
+            try await storageRef.delete()
+        }
+    }
+    
+    /// 프로필 이미지 완전 삭제 (Storage + Auth)
+    func deleteProfileImage(userId: String) async throws {
+        // 1. Storage에서 이미지 삭제
+        try await deleteExistingProfileImage(userId: userId)
+        
+        // 2. Firebase Auth 프로필 업데이트는 ViewModel에서 처리
+        // (FirestoreService는 데이터 레이어이므로 Auth 업데이트는 ViewModel이 담당)
+    }
+    
+    /// 프로필 폴더 전체 삭제 (계정 삭제 시 사용)
+    private func deleteProfileFolder(userId: String) async throws {
+        let profileFolderRef = storage.reference()
+            .child("users")
+            .child(userId)
+            .child("profile")
+        
+        do {
+            let result = try await profileFolderRef.listAll()
+            
+            // 프로필 폴더의 모든 파일 삭제
+            for item in result.items {
+                try await item.delete()
+            }
+        } catch {
+            // 프로필 폴더가 없는 경우는 무시
+            print("프로필 폴더 삭제 실패 (존재하지 않을 수 있음): \(error.localizedDescription)")
+        }
+    }
+    
+    /// 사용자의 모든 데이터 삭제 (계정 삭제용) - 프로필 이미지 삭제 포함
     func deleteAllUserData(userId: String) async throws {
         let batch = db.batch()
         
@@ -227,46 +296,8 @@ final class FirestoreService {
         // 배치 실행
         try await batch.commit()
         
-        // Storage에서 사용자 폴더 전체 삭제 시도
+        // Storage에서 사용자 폴더 전체 삭제 시도 (프로필 이미지 포함)
         try await deleteUserStorageFolder(userId: userId)
-    }
-    
-    /// 사용자의 Storage 폴더 전체 삭제
-    private func deleteUserStorageFolder(userId: String) async throws {
-        let userFolderRef = storage.reference()
-            .child("users")
-            .child(userId)
-        
-        do {
-            // listAll을 사용해서 모든 파일과 하위 폴더를 가져온 후 삭제
-            let result = try await userFolderRef.listAll()
-            
-            // 모든 파일 삭제
-            for item in result.items {
-                try await item.delete()
-            }
-            
-            // 하위 폴더들도 재귀적으로 삭제
-            for prefix in result.prefixes {
-                try await deleteStoragePrefix(prefix)
-            }
-        } catch {
-            // Storage 삭제 실패는 로그만 남기고 에러를 던지지 않음
-            print("Storage 폴더 삭제 실패: \(error.localizedDescription)")
-        }
-    }
-    
-    /// Storage 폴더 재귀 삭제 헬퍼 메서드
-    private func deleteStoragePrefix(_ prefix: StorageReference) async throws {
-        let result = try await prefix.listAll()
-        
-        for item in result.items {
-            try await item.delete()
-        }
-        
-        for subPrefix in result.prefixes {
-            try await deleteStoragePrefix(subPrefix)
-        }
     }
 
     func fetchUniqueVisitedPlaces(userId: String) async throws -> [PlaceSummary] {
@@ -305,7 +336,7 @@ final class FirestoreService {
         return placeSummaries
     }
 
-    // MARK: - Image Upload/Delete Methods
+    // MARK: - Image Upload/Delete Methods (일반 이미지)
     private func uploadImages(userId: String, contentId: String, images: [UIImage]) async throws -> [String] {
         var imageUrls: [String] = []
         for (index, image) in images.enumerated() {
@@ -349,6 +380,44 @@ final class FirestoreService {
         let storageRef = storage.reference(forURL: imageUrl)
         try await storageRef.delete()
     }
+    
+    /// 사용자의 Storage 폴더 전체 삭제 (프로필 이미지 포함)
+    private func deleteUserStorageFolder(userId: String) async throws {
+        let userFolderRef = storage.reference()
+            .child("users")
+            .child(userId)
+        
+        do {
+            // listAll을 사용해서 모든 파일과 하위 폴더를 가져온 후 삭제
+            let result = try await userFolderRef.listAll()
+            
+            // 모든 파일 삭제
+            for item in result.items {
+                try await item.delete()
+            }
+            
+            // 하위 폴더들도 재귀적으로 삭제
+            for prefix in result.prefixes {
+                try await deleteStoragePrefix(prefix)
+            }
+        } catch {
+            // Storage 삭제 실패는 로그만 남기고 에러를 던지지 않음
+            print("Storage 폴더 삭제 실패: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Storage 폴더 재귀 삭제 헬퍼 메서드
+    private func deleteStoragePrefix(_ prefix: StorageReference) async throws {
+        let result = try await prefix.listAll()
+        
+        for item in result.items {
+            try await item.delete()
+        }
+        
+        for subPrefix in result.prefixes {
+            try await deleteStoragePrefix(subPrefix)
+        }
+    }
 }
 
 // MARK: - Extensions
@@ -368,7 +437,7 @@ extension StorageReference {
     }
 }
 
-// MARK: - Storage Reference 확장 (🆕 추가)
+// MARK: - Storage Reference 확장
 extension StorageReference {
     func listAll() async throws -> StorageListResult {
         return try await withCheckedThrowingContinuation { continuation in

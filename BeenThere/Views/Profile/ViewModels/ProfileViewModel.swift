@@ -2,7 +2,7 @@
 //  ProfileViewModel.swift
 //  BeenThere
 //
-//  내정보 뷰모델
+//  내정보 뷰모델 (FirestoreService 적용)
 //
 
 import Foundation
@@ -32,6 +32,7 @@ class ProfileViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var showError: Bool = false
     @Published var errorMessage: String = ""
+    @Published var isUploadingProfileImage: Bool = false
     
     private let firestoreService = FirestoreService.shared
     private var cancellables = Set<AnyCancellable>()
@@ -79,6 +80,74 @@ class ProfileViewModel: ObservableObject {
                 }
             }
         }.resume()
+    }
+    
+    // MARK: - 프로필 이미지 업로드
+    func updateProfileImage(_ image: UIImage) {
+        guard let user = Auth.auth().currentUser else {
+            showErrorMessage("로그인이 필요합니다.")
+            return
+        }
+        
+        isUploadingProfileImage = true
+        
+        Task {
+            do {
+                // 1. FirestoreService를 통해 이미지 업로드
+                let imageUrl = try await firestoreService.uploadProfileImage(userId: user.uid, image: image)
+                
+                // 2. Firebase Auth 프로필 업데이트
+                let changeRequest = user.createProfileChangeRequest()
+                changeRequest.photoURL = URL(string: imageUrl)
+                try await changeRequest.commitChanges()
+                
+                // 3. UI 업데이트
+                await MainActor.run {
+                    self.profileImage = image
+                    self.isUploadingProfileImage = false
+                }
+                
+            } catch {
+                await MainActor.run {
+                    self.showErrorMessage("프로필 사진 업로드에 실패했습니다.")
+                    self.isUploadingProfileImage = false
+                }
+            }
+        }
+    }
+    
+    // MARK: - 프로필 이미지 삭제
+    func deleteProfileImage() {
+        guard let user = Auth.auth().currentUser else {
+            showErrorMessage("로그인이 필요합니다.")
+            return
+        }
+        
+        isUploadingProfileImage = true
+        
+        Task {
+            do {
+                // 1. FirestoreService를 통해 이미지 삭제
+                try await firestoreService.deleteProfileImage(userId: user.uid)
+                
+                // 2. Firebase Auth 프로필 업데이트
+                let changeRequest = user.createProfileChangeRequest()
+                changeRequest.photoURL = nil
+                try await changeRequest.commitChanges()
+                
+                // 3. UI 업데이트
+                await MainActor.run {
+                    self.profileImage = nil
+                    self.isUploadingProfileImage = false
+                }
+                
+            } catch {
+                await MainActor.run {
+                    self.showErrorMessage("프로필 사진 삭제에 실패했습니다.")
+                    self.isUploadingProfileImage = false
+                }
+            }
+        }
     }
     
     func loadTravelStatistics() {
@@ -186,7 +255,7 @@ class ProfileViewModel: ObservableObject {
         
         Task {
             do {
-                // Firestore의 사용자 데이터 삭제
+                // Firestore의 사용자 데이터 삭제 (프로필 이미지 포함)
                 try await firestoreService.deleteAllUserData(userId: user.uid)
                 
                 // Firebase Auth 계정 삭제
@@ -201,10 +270,5 @@ class ProfileViewModel: ObservableObject {
                 }
             }
         }
-    }
-    
-    private func showErrorMessage(_ message: String) {
-        errorMessage = message
-        showError = true
     }
 }

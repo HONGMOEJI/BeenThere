@@ -2,7 +2,7 @@
 //  ProfileView.swift
 //  BeenThere
 //
-//  내정보 뷰 (헤더 스타일 수정)
+//  내정보 뷰 (프로필 사진 편집 기능 포함)
 //
 
 import UIKit
@@ -12,14 +12,17 @@ class ProfileView: UIView {
     let scrollView = UIScrollView()
     let contentView = UIView()
     
-    // 헤더 (내 기록 스타일과 동일하게)
+    // 헤더
     let headerContainer = UIView()
     let titleLabel = UILabel()
     let refreshButton = UIButton(type: .system)
     
     // 프로필 섹션
     let profileContainer = UIView()
+    let profileImageContainer = UIView()
     let profileImageView = UIImageView()
+    let profileImageEditButton = UIButton(type: .system)
+    let profileImageLoadingIndicator = UIActivityIndicatorView(style: .medium)
     let nameLabel = UILabel()
     let emailLabel = UILabel()
     let joinDateLabel = UILabel()
@@ -107,6 +110,9 @@ class ProfileView: UIView {
         profileContainer.layer.borderWidth = 1
         profileContainer.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
         
+        // 프로필 이미지 컨테이너 설정
+        profileImageContainer.translatesAutoresizingMaskIntoConstraints = false
+        
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.backgroundColor = UIColor.white.withAlphaComponent(0.1)
         profileImageView.layer.cornerRadius = 35
@@ -114,6 +120,24 @@ class ProfileView: UIView {
         profileImageView.contentMode = .scaleAspectFill
         profileImageView.image = UIImage(systemName: "person.fill")
         profileImageView.tintColor = .themeTextSecondary
+        
+        // 프로필 이미지 편집 버튼 설정
+        profileImageEditButton.translatesAutoresizingMaskIntoConstraints = false
+        profileImageEditButton.setImage(UIImage(systemName: "camera.fill"), for: .normal)
+        profileImageEditButton.tintColor = .white
+        profileImageEditButton.backgroundColor = UIColor.systemBlue
+        profileImageEditButton.layer.cornerRadius = 12
+        profileImageEditButton.layer.borderWidth = 2
+        profileImageEditButton.layer.borderColor = UIColor.themeBackground.cgColor
+        
+        // 프로필 이미지 로딩 인디케이터 설정
+        profileImageLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        profileImageLoadingIndicator.color = .themeTextSecondary
+        profileImageLoadingIndicator.hidesWhenStopped = true
+        
+        profileImageContainer.addSubview(profileImageView)
+        profileImageContainer.addSubview(profileImageEditButton)
+        profileImageContainer.addSubview(profileImageLoadingIndicator)
         
         nameLabel.font = .systemFont(ofSize: 24, weight: .bold)
         nameLabel.textColor = .themeTextPrimary
@@ -127,7 +151,7 @@ class ProfileView: UIView {
         joinDateLabel.textColor = .themeTextSecondary
         joinDateLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        profileContainer.addSubview(profileImageView)
+        profileContainer.addSubview(profileImageContainer)
         profileContainer.addSubview(nameLabel)
         profileContainer.addSubview(emailLabel)
         profileContainer.addSubview(joinDateLabel)
@@ -242,13 +266,27 @@ class ProfileView: UIView {
             profileContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             profileContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
-            profileImageView.topAnchor.constraint(equalTo: profileContainer.topAnchor, constant: 24),
-            profileImageView.leadingAnchor.constraint(equalTo: profileContainer.leadingAnchor, constant: 24),
-            profileImageView.widthAnchor.constraint(equalToConstant: 70),
-            profileImageView.heightAnchor.constraint(equalToConstant: 70),
+            // 프로필 이미지 컨테이너 제약조건
+            profileImageContainer.topAnchor.constraint(equalTo: profileContainer.topAnchor, constant: 24),
+            profileImageContainer.leadingAnchor.constraint(equalTo: profileContainer.leadingAnchor, constant: 24),
+            profileImageContainer.widthAnchor.constraint(equalToConstant: 70),
+            profileImageContainer.heightAnchor.constraint(equalToConstant: 70),
+            
+            profileImageView.topAnchor.constraint(equalTo: profileImageContainer.topAnchor),
+            profileImageView.leadingAnchor.constraint(equalTo: profileImageContainer.leadingAnchor),
+            profileImageView.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor),
+            profileImageView.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor),
+            
+            profileImageEditButton.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor, constant: 4),
+            profileImageEditButton.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor, constant: 4),
+            profileImageEditButton.widthAnchor.constraint(equalToConstant: 24),
+            profileImageEditButton.heightAnchor.constraint(equalToConstant: 24),
+            
+            profileImageLoadingIndicator.centerXAnchor.constraint(equalTo: profileImageContainer.centerXAnchor),
+            profileImageLoadingIndicator.centerYAnchor.constraint(equalTo: profileImageContainer.centerYAnchor),
             
             nameLabel.topAnchor.constraint(equalTo: profileContainer.topAnchor, constant: 24),
-            nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor, constant: 16),
             nameLabel.trailingAnchor.constraint(equalTo: profileContainer.trailingAnchor, constant: -24),
             
             emailLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
@@ -320,6 +358,8 @@ class ProfileView: UIView {
         
         if let image = profileImage {
             profileImageView.image = image
+        } else {
+            profileImageView.image = UIImage(systemName: "person.fill")
         }
     }
     
@@ -388,6 +428,19 @@ class ProfileView: UIView {
             loadingIndicator.startAnimating()
         } else {
             loadingIndicator.stopAnimating()
+        }
+    }
+    
+    // 프로필 이미지 업로드 상태 표시
+    func showProfileImageUploading(_ isUploading: Bool) {
+        profileImageEditButton.isEnabled = !isUploading
+        
+        if isUploading {
+            profileImageLoadingIndicator.startAnimating()
+            profileImageView.alpha = 0.7
+        } else {
+            profileImageLoadingIndicator.stopAnimating()
+            profileImageView.alpha = 1.0
         }
     }
 }

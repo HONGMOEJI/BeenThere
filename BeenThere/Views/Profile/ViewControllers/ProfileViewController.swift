@@ -2,11 +2,12 @@
 //  ProfileViewController.swift
 //  BeenThere
 //
-//  내정보 뷰컨트롤러
+//  내정보 뷰컨트롤러 (프로필 사진 편집 기능 포함)
 //
 
 import UIKit
 import Combine
+import PhotosUI
 
 class ProfileViewController: UIViewController {
     private let viewModel = ProfileViewModel()
@@ -58,8 +59,8 @@ class ProfileViewController: UIViewController {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }
         
-        // 로그인 뷰컨트롤러로 전환 (실제 로그인 VC 클래스명으로 변경)
-        let loginVC = AuthViewController() // 실제 로그인 VC로 변경하세요
+        // 로그인 뷰컨트롤러로 전환
+        let loginVC = AuthViewController()
         let navigationController = UINavigationController(rootViewController: loginVC)
         
         window.rootViewController = navigationController
@@ -129,6 +130,14 @@ class ProfileViewController: UIViewController {
             }
             .store(in: &cancellables)
         
+        // 프로필 이미지 업로드 상태 바인딩
+        viewModel.$isUploadingProfileImage
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isUploading in
+                self?.profileView.showProfileImageUploading(isUploading)
+            }
+            .store(in: &cancellables)
+        
         // 에러 처리
         viewModel.$showError
             .receive(on: DispatchQueue.main)
@@ -144,6 +153,9 @@ class ProfileViewController: UIViewController {
         profileView.refreshButton.addTarget(self, action: #selector(refreshTapped), for: .touchUpInside)
         profileView.logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
         profileView.deleteAccountButton.addTarget(self, action: #selector(deleteAccountTapped), for: .touchUpInside)
+        
+        // 프로필 이미지 편집 버튼 액션 추가
+        profileView.profileImageEditButton.addTarget(self, action: #selector(profileImageEditTapped), for: .touchUpInside)
     }
     
     private func setupCollectionView() {
@@ -155,7 +167,61 @@ class ProfileViewController: UIViewController {
     @objc private func refreshTapped() {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
+        viewModel.loadUserProfile()
         viewModel.loadTravelStatistics()
+    }
+    
+    // MARK: - 프로필 이미지 편집
+    @objc private func profileImageEditTapped() {
+        let alert = UIAlertController(title: "프로필 사진", message: nil, preferredStyle: .actionSheet)
+        
+        // 사진 선택
+        alert.addAction(UIAlertAction(title: "사진 선택", style: .default) { [weak self] _ in
+            self?.presentImagePicker()
+        })
+        
+        // 현재 프로필 사진이 있는 경우 삭제 옵션 제공
+        if viewModel.profileImage != nil {
+            alert.addAction(UIAlertAction(title: "프로필 사진 삭제", style: .destructive) { [weak self] _ in
+                self?.confirmDeleteProfileImage()
+            })
+        }
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        
+        // iPad에서 popover 설정
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = profileView.profileImageEditButton
+            popover.sourceRect = profileView.profileImageEditButton.bounds
+        }
+        
+        present(alert, animated: true)
+    }
+    
+    private func confirmDeleteProfileImage() {
+        let alert = UIAlertController(
+            title: "프로필 사진 삭제",
+            message: "프로필 사진을 삭제하시겠습니까?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.viewModel.deleteProfileImage()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func presentImagePicker() {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        
+        present(picker, animated: true)
     }
     
     @objc private func logoutTapped() {
@@ -194,8 +260,34 @@ class ProfileViewController: UIViewController {
             message: viewModel.errorMessage,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { [weak self] _ in
+            self?.viewModel.showError = false
+        })
         present(alert, animated: true)
+    }
+}
+
+// MARK: - PHPickerViewControllerDelegate
+extension ProfileViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let result = results.first else { return }
+        
+        result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self?.viewModel.showErrorMessage("이미지를 불러오는데 실패했습니다: \(error.localizedDescription)")
+                }
+                return
+            }
+            
+            if let image = object as? UIImage {
+                DispatchQueue.main.async {
+                    self?.viewModel.updateProfileImage(image)
+                }
+            }
+        }
     }
 }
 
@@ -223,5 +315,13 @@ extension ProfileViewController: UICollectionViewDataSource, UICollectionViewDel
 extension ProfileViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 80, height: 100)
+    }
+}
+
+// MARK: - ViewModel Extension for Error Handling
+extension ProfileViewModel {
+    func showErrorMessage(_ message: String) {
+        errorMessage = message
+        showError = true
     }
 }

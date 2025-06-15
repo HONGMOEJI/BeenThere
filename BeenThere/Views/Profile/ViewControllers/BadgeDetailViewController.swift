@@ -28,6 +28,12 @@ class BadgeDetailViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         configureBadgeInfo()
+        
+        // 네비게이션 타이틀과 버튼을 흰색으로
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.white
+        ]
+        navigationController?.navigationBar.tintColor = .white
     }
     
     private func setupUI() {
