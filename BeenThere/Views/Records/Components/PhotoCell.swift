@@ -2,7 +2,7 @@
 //  PhotoCell.swift
 //  BeenThere
 //
-//  기록 작성용 사진 셀 (기존 이미지 URL + 새 이미지 지원)
+//  기록 작성용 사진 셀
 //
 
 import UIKit

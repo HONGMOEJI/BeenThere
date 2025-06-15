@@ -7,8 +7,6 @@
 //  - 주소 검색 기능
 //  - 주요 도시 바로가기
 //
-//  BeenThere/Views/Tour/Components/LocationSelectionViewController.swift
-//
 
 import UIKit
 import MapKit

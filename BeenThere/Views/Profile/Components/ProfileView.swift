@@ -2,7 +2,7 @@
 //  ProfileView.swift
 //  BeenThere
 //
-//  내정보 뷰 (프로필 사진 편집 기능 포함)
+//  내정보 뷰
 //
 
 import UIKit
@@ -121,14 +121,20 @@ class ProfileView: UIView {
         profileImageView.image = UIImage(systemName: "person.fill")
         profileImageView.tintColor = .themeTextSecondary
         
-        // 프로필 이미지 편집 버튼 설정
+        // 🆕 프로필 이미지 편집 버튼 디자인 개선
         profileImageEditButton.translatesAutoresizingMaskIntoConstraints = false
-        profileImageEditButton.setImage(UIImage(systemName: "camera.fill"), for: .normal)
-        profileImageEditButton.tintColor = .white
-        profileImageEditButton.backgroundColor = UIColor.systemBlue
-        profileImageEditButton.layer.cornerRadius = 12
-        profileImageEditButton.layer.borderWidth = 2
+        profileImageEditButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
+        profileImageEditButton.tintColor = .systemBlue
+        profileImageEditButton.backgroundColor = .themeBackground
+        profileImageEditButton.layer.cornerRadius = 10
+        profileImageEditButton.layer.borderWidth = 1.5
         profileImageEditButton.layer.borderColor = UIColor.themeBackground.cgColor
+        
+        // 그림자 효과 추가
+        profileImageEditButton.layer.shadowColor = UIColor.black.cgColor
+        profileImageEditButton.layer.shadowOffset = CGSize(width: 0, height: 1)
+        profileImageEditButton.layer.shadowOpacity = 0.2
+        profileImageEditButton.layer.shadowRadius = 2
         
         // 프로필 이미지 로딩 인디케이터 설정
         profileImageLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -277,10 +283,11 @@ class ProfileView: UIView {
             profileImageView.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor),
             profileImageView.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor),
             
-            profileImageEditButton.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor, constant: 4),
-            profileImageEditButton.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor, constant: 4),
-            profileImageEditButton.widthAnchor.constraint(equalToConstant: 24),
-            profileImageEditButton.heightAnchor.constraint(equalToConstant: 24),
+            // 🆕 편집 버튼 크기와 위치 조정
+            profileImageEditButton.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor, constant: 2),
+            profileImageEditButton.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor, constant: 2),
+            profileImageEditButton.widthAnchor.constraint(equalToConstant: 20),
+            profileImageEditButton.heightAnchor.constraint(equalToConstant: 20),
             
             profileImageLoadingIndicator.centerXAnchor.constraint(equalTo: profileImageContainer.centerXAnchor),
             profileImageLoadingIndicator.centerYAnchor.constraint(equalTo: profileImageContainer.centerYAnchor),
@@ -358,8 +365,12 @@ class ProfileView: UIView {
         
         if let image = profileImage {
             profileImageView.image = image
+            // 🆕 프로필 이미지가 있을 때 편집 버튼 아이콘 변경
+            profileImageEditButton.setImage(UIImage(systemName: "pencil.circle.fill"), for: .normal)
         } else {
             profileImageView.image = UIImage(systemName: "person.fill")
+            // 🆕 프로필 이미지가 없을 때 추가 버튼 아이콘
+            profileImageEditButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
         }
     }
     
@@ -438,9 +449,12 @@ class ProfileView: UIView {
         if isUploading {
             profileImageLoadingIndicator.startAnimating()
             profileImageView.alpha = 0.7
+            // 🆕 업로드 중일 때 버튼 숨기기
+            profileImageEditButton.alpha = 0.5
         } else {
             profileImageLoadingIndicator.stopAnimating()
             profileImageView.alpha = 1.0
+            profileImageEditButton.alpha = 1.0
         }
     }
 }

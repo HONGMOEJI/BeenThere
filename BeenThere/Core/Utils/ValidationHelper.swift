@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  유효성 검사 헬퍼 클래스
-//  BeenThere/Core/Utils/ValidationHelper.swift
 //
 
 import Foundation

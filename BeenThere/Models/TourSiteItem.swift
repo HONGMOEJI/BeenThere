@@ -3,8 +3,6 @@
 //  BeenThere
 //
 //  관광지(여행지, 음식점, 문화시설 등) 정보 모델
-//  - API 명세 및 BeenThere UI 요구사항을 모두 반영
-//  프로젝트 경로: BeenThere/Core/Models/TourSiteItem.swift
 //
 
 import Foundation

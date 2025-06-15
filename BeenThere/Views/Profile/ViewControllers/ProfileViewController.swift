@@ -2,7 +2,7 @@
 //  ProfileViewController.swift
 //  BeenThere
 //
-//  내정보 뷰컨트롤러 (프로필 사진 편집 기능 포함)
+//  내정보 뷰컨트롤러
 //
 
 import UIKit

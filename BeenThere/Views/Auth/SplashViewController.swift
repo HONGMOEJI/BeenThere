@@ -2,8 +2,7 @@
 //  SplashViewController.swift
 //  BeenThere
 //
-//  스플래시 화면 - 향상된 보도블럭 애니메이션 + 디테일 추가
-//  BeenThere/Views/Auth/SplashViewController.swift
+//  스플래시 화면
 //
 
 import UIKit

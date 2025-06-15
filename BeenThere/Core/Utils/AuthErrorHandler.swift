@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  Firebase Auth 에러 처리 헬퍼
-//  BeenThere/Core/Utils/AuthErrorHandler.swift
 //
 
 import Foundation

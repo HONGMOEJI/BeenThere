@@ -2,9 +2,7 @@
 //  AuthViewController.swift
 //  BeenThere
 //
-//  로그인/회원가입/익명 로그인 진입 화면
-//  (다크 그레이 테마 + 박스형 텍스트 필드 + 비밀번호 토글 버튼 + 타자 애니메이션)
-//  BeenThere/Views/Auth/AuthViewController.swift
+//  로그인/회원가입 진입 화면
 //
 
 import UIKit

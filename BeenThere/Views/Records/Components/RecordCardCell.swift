@@ -2,7 +2,7 @@
 //  RecordCardCell.swift
 //  BeenThere
 //
-//  방문 기록 카드 셀 - 전체 폭 가로 레이아웃
+//  방문 기록 카드 셀
 //
 
 import UIKit

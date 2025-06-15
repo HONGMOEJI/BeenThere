@@ -2,7 +2,7 @@
 //  RecordDetailViewController.swift
 //  BeenThere
 //
-//  방문 기록 상세보기 화면 (수정 후 즉시 갱신 지원)
+//  방문 기록 상세보기 화면
 //
 
 import UIKit

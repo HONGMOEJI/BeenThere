@@ -2,7 +2,7 @@
 //  RecordViewModel.swift
 //  BeenThere
 //
-//  방문 기록 뷰모델 (편집 모드에서 기존 이미지 유지)
+//  방문 기록 뷰모델
 //
 
 import Foundation

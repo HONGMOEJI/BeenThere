@@ -2,8 +2,7 @@
 //  OnboardingViewController.swift
 //  BeenThere
 //
-//  온보딩 화면 - 첫 실행때만 노출 (풀스크린 레이아웃 + 가로 전용 스크롤 + 개선된 Skip 버튼 + 무작위 핀 배치)
-//  BeenThere/Views/Auth/OnboardingViewController.swift
+//  온보딩 화면
 //
 
 import UIKit

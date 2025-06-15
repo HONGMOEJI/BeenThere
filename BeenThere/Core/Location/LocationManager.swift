@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  CoreLocation을 사용해 현재 위치를 가져오는 객체
-//  BeenThere/Core/Location/LocationManager.swift
 //
 
 import Foundation

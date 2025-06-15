@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  API 응답 캐싱 기능을 제공하는 유틸리티 클래스
-//  BeenThere/Core/Network/APICache.swift
 //
 
 import Foundation

@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  Pretendard 폰트 시스템
-//  BeenThere/Core/Extensions/UIFont+Pretendard.swift
 //
 
 import UIKit

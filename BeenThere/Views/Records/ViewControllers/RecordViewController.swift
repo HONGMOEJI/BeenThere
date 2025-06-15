@@ -2,7 +2,7 @@
 //  RecordViewController.swift
 //  BeenThere
 //
-//  방문 기록 작성/편집 화면 (편집 모드 지원: 기존+신규 사진 유지)
+//  방문 기록 작성/편집 화면
 //
 
 import UIKit

@@ -3,8 +3,6 @@
 //  BeenThere
 //
 //  비밀번호 찾기/재설정 화면
-//  (다크 그레이 테마 + 박스형 텍스트 필드 + 통일된 패딩)
-//  BeenThere/Views/Auth/ForgotPasswordViewController.swift
 //
 
 import UIKit

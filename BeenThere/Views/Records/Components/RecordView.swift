@@ -2,7 +2,7 @@
 //  RecordView.swift
 //  BeenThere
 //
-//  방문 기록 작성 뷰 (개선된 모던 그레이스케일 디자인)
+//  방문 기록 작성 뷰
 //
 
 import UIKit

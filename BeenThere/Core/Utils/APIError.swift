@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  API 및 네트워크/캐시 관련 에러 정의
-//  BeenThere/Core/Network/APIError.swift
 //
 
 import Foundation

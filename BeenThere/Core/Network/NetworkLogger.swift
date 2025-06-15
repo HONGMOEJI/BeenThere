@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  네트워크 요청/응답을 로깅하는 유틸리티
-//  BeenThere/Core/Network/NetworkLogger.swift
 //
 
 import Foundation

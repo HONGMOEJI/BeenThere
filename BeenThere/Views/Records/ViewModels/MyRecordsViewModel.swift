@@ -2,7 +2,7 @@
 //  MyRecordsViewModel.swift
 //  BeenThere
 //
-//  내 기록 뷰모델 (날짜범위 + 검색 지원)
+//  내 기록 뷰모델
 //
 
 import Foundation

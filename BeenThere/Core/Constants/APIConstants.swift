@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  API 관련 상수 정의
-//  BeenThere/Core/Constants/APIConstants.swift
 //
 
 import Foundation
@@ -202,7 +201,7 @@ struct APIConstants {
         ]
     }
     
-    // MARK: - Search Radius Options (검색 반경 옵션)
+    // MARK: - Search Radius Options
     struct RadiusOptions {
         static let small = 1000      // 1km
         static let medium = 5000     // 5km

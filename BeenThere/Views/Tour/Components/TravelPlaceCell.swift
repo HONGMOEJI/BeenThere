@@ -2,8 +2,7 @@
 //  TravelPlaceCell.swift
 //  BeenThere
 //
-//  그레이스케일 테마 여행지 카드 셀
-//  - 방문 횟수 뱃지만 유지, 방문완료 뱃지 제거
+//  여행지 카드 셀
 //
 
 import UIKit

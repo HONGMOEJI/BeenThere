@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  앱 전체에서 사용할 통합 상수 정의
-//  BeenThere/Core/Constants/AppConstants.swift
 //
 
 import UIKit

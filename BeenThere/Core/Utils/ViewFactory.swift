@@ -3,7 +3,6 @@
 //  BeenThere
 //
 //  공통 UI 컴포넌트 팩토리
-//  BeenThere/Core/Utils/ViewFactory.swift
 //
 
 import UIKit

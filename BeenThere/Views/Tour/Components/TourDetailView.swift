@@ -2,7 +2,7 @@
 //  TourDetailView.swift
 //  BeenThere
 //
-//  관광지 상세 정보 뷰 (방문 횟수 표시 추가)
+//  관광지 상세 정보 뷰
 //
 
 import UIKit

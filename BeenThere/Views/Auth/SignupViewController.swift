@@ -2,7 +2,7 @@
 //  SignupViewController.swift
 //  BeenThere
 //
-//  회원가입 화면 (이메일 인증 포함)
+//  회원가입 화면
 //
 
 import UIKit

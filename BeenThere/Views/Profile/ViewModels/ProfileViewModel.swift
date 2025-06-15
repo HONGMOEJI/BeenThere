@@ -2,7 +2,7 @@
 //  ProfileViewModel.swift
 //  BeenThere
 //
-//  내정보 뷰모델 (FirestoreService 적용)
+//  내정보 뷰모델
 //
 
 import Foundation
