@@ -2,7 +2,7 @@
 //  MyRecordsViewController.swift
 //  BeenThere
 //
-//  내 기록 뷰컨트롤러
+//  내 기록 뷰컨트롤러 (날짜범위 + 검색 지원)
 //
 
 import UIKit
@@ -20,7 +20,6 @@ class MyRecordsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupView()
         setupBindings()
         setupActions()
         setupCollectionView()
@@ -29,29 +28,23 @@ class MyRecordsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // 네비게이션 바 숨기기
         navigationController?.setNavigationBarHidden(true, animated: animated)
-        // 기록 추가/수정 후 돌아올 때 새로고침
-        viewModel.refreshCurrentDate()
+        viewModel.refreshCurrentRange()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // 다른 화면으로 이동할 때 네비게이션 바 다시 표시
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
-    // MARK: - Notification Setup (새로 추가)
+    // MARK: - Notification Setup
     private func setupNotificationObservers() {
-        // 기록 업데이트 알림 수신
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleRecordUpdated(_:)),
             name: NSNotification.Name("RecordUpdated"),
             object: nil
         )
-        
-        // 기록 삭제 알림 수신
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleRecordDeleted(_:)),
@@ -60,53 +53,28 @@ class MyRecordsViewController: UIViewController {
         )
     }
 
-    // MARK: - Notification Handlers (새로 추가)
     @objc private func handleRecordUpdated(_ notification: Notification) {
-        print("🔔 RecordUpdated 알림 받음")
-        
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // 현재 선택된 날짜의 기록들을 다시 로드
-            self.viewModel.refreshCurrentDate()
-            
-            print("✅ MyRecords 새로고침 완료")
+            self?.viewModel.refreshCurrentRange()
         }
     }
 
     @objc private func handleRecordDeleted(_ notification: Notification) {
-        print("🔔 RecordDeleted 알림 받음")
-        
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // 현재 선택된 날짜의 기록들을 다시 로드
-            self.viewModel.refreshCurrentDate()
-            
-            print("✅ MyRecords 새로고침 완료 (삭제)")
+            self?.viewModel.refreshCurrentRange()
         }
     }
 
-    // MARK: - Cleanup (새로 추가)
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Setup Methods
-    private func setupView() {
-        // 네비게이션 바 관련 설정 제거
-        // 상태바 스타일 설정
-        if #available(iOS 13.0, *) {
-            overrideUserInterfaceStyle = .dark
-        }
-    }
-    
+    // MARK: - Bindings
     private func setupBindings() {
-        viewModel.$selectedDate
+        Publishers.CombineLatest(viewModel.$startDate, viewModel.$endDate)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] date in
-                self?.myRecordsView.updateDateLabel(date)
-                self?.myRecordsView.datePicker.date = date
+            .sink { [weak self] start, end in
+                self?.myRecordsView.updateDateLabels(start: start, end: end)
             }
             .store(in: &cancellables)
         
@@ -125,7 +93,6 @@ class MyRecordsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
                 self?.myRecordsView.showLoading(isLoading)
-                
                 if let self = self {
                     let isEmpty = self.viewModel.records.isEmpty && !isLoading
                     self.myRecordsView.showEmptyState(isEmpty)
@@ -143,21 +110,35 @@ class MyRecordsViewController: UIViewController {
             .store(in: &cancellables)
     }
     
+    // MARK: - Actions
     private func setupActions() {
-        myRecordsView.datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        myRecordsView.startDatePicker.addTarget(self, action: #selector(startDateChanged(_:)), for: .valueChanged)
+        myRecordsView.endDatePicker.addTarget(self, action: #selector(endDateChanged(_:)), for: .valueChanged)
         myRecordsView.todayButton.addTarget(self, action: #selector(todayTapped), for: .touchUpInside)
         myRecordsView.refreshButton.addTarget(self, action: #selector(refreshTapped), for: .touchUpInside)
+        
+        // 커스텀 검색 텍스트 필드 이벤트 추가
+        myRecordsView.searchTextField.addTarget(self, action: #selector(searchTextChanged(_:)), for: .editingChanged)
     }
     
-    private func setupCollectionView() {
-        myRecordsView.timelineCollectionView.dataSource = self
-        myRecordsView.timelineCollectionView.delegate = self
-        myRecordsView.timelineCollectionView.register(RecordCardCell.self, forCellWithReuseIdentifier: RecordCardCell.identifier)
+    @objc private func startDateChanged(_ sender: UIDatePicker) {
+        let end = viewModel.endDate
+        let newStart = sender.date
+        if newStart > end {
+            viewModel.selectDateRange(start: end, end: end)
+        } else {
+            viewModel.selectDateRange(start: newStart, end: end)
+        }
     }
     
-    // MARK: - Actions
-    @objc private func dateChanged(_ sender: UIDatePicker) {
-        viewModel.selectDate(sender.date)
+    @objc private func endDateChanged(_ sender: UIDatePicker) {
+        let start = viewModel.startDate
+        let newEnd = sender.date
+        if newEnd < start {
+            viewModel.selectDateRange(start: start, end: start)
+        } else {
+            viewModel.selectDateRange(start: start, end: newEnd)
+        }
     }
     
     @objc private func todayTapped() {
@@ -167,7 +148,18 @@ class MyRecordsViewController: UIViewController {
     @objc private func refreshTapped() {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
-        viewModel.refreshCurrentDate()
+        viewModel.refreshCurrentRange()
+    }
+    
+    @objc private func searchTextChanged(_ textField: UITextField) {
+        viewModel.searchQuery = textField.text ?? ""
+    }
+    
+    // MARK: - CollectionView
+    private func setupCollectionView() {
+        myRecordsView.timelineCollectionView.dataSource = self
+        myRecordsView.timelineCollectionView.delegate = self
+        myRecordsView.timelineCollectionView.register(RecordCardCell.self, forCellWithReuseIdentifier: RecordCardCell.identifier)
     }
     
     // MARK: - Alert Methods
@@ -181,25 +173,9 @@ class MyRecordsViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func showDeleteConfirmAlert(for record: VisitRecord) {
-        let alert = UIAlertController(
-            title: "기록 삭제",
-            message: "'\(record.placeTitle)' 기록을 삭제하시겠습니까?",
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
-            Task {
-                await self?.viewModel.deleteRecord(record)
-            }
-        })
-        
-        present(alert, animated: true)
-    }
+    // MARK: - CollectionView DataSource & Delegate
 }
 
-// MARK: - UICollectionViewDataSource & Delegate
 extension MyRecordsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return viewModel.records.count
@@ -218,15 +194,12 @@ extension MyRecordsViewController: UICollectionViewDataSource, UICollectionViewD
     }
 }
 
-// MARK: - UICollectionViewFlowLayout
 extension MyRecordsViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // 전체 폭으로 변경 (좌우 여백 20씩)
         let width = collectionView.frame.width - 40
-        let height: CGFloat = 200 // 높이 줄임
+        let height: CGFloat = 200
         return CGSize(width: width, height: height)
     }
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 16
     }
