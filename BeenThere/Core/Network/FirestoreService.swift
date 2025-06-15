@@ -175,6 +175,100 @@ final class FirestoreService {
         return records
     }
 
+    // MARK: - 프로필 관련 메서드
+    
+    /// 사용자의 모든 기록 조회 (프로필 통계용)
+    func fetchAllRecords(userId: String) async throws -> [VisitRecord] {
+        let visitRecordsRef = db
+            .collection("users")
+            .document(userId)
+            .collection("visitRecords")
+        let snapshot = try await visitRecordsRef
+            .order(by: "visitedAt", descending: true)
+            .getDocuments()
+        var records: [VisitRecord] = []
+        for doc in snapshot.documents {
+            do {
+                var record = try doc.data(as: VisitRecord.self)
+                record.id = doc.documentID
+                records.append(record)
+            } catch {
+                // pass
+            }
+        }
+        return records
+    }
+    
+    /// 사용자의 모든 데이터 삭제 (계정 삭제용)
+    func deleteAllUserData(userId: String) async throws {
+        let batch = db.batch()
+        
+        // 사용자의 모든 기록 조회
+        let recordsSnapshot = try await db
+            .collection("users")
+            .document(userId)
+            .collection("visitRecords")
+            .getDocuments()
+        
+        // 기록과 관련된 이미지들 먼저 삭제
+        for document in recordsSnapshot.documents {
+            if let record = try? document.data(as: VisitRecord.self),
+               !record.imageUrls.isEmpty {
+                try await deleteImages(record.imageUrls)
+            }
+            // 기록 문서 삭제를 배치에 추가
+            batch.deleteDocument(document.reference)
+        }
+        
+        // 사용자 문서 삭제 (만약 별도로 사용자 정보를 저장한다면)
+        let userDocRef = db.collection("users").document(userId)
+        batch.deleteDocument(userDocRef)
+        
+        // 배치 실행
+        try await batch.commit()
+        
+        // Storage에서 사용자 폴더 전체 삭제 시도
+        try await deleteUserStorageFolder(userId: userId)
+    }
+    
+    /// 사용자의 Storage 폴더 전체 삭제
+    private func deleteUserStorageFolder(userId: String) async throws {
+        let userFolderRef = storage.reference()
+            .child("users")
+            .child(userId)
+        
+        do {
+            // listAll을 사용해서 모든 파일과 하위 폴더를 가져온 후 삭제
+            let result = try await userFolderRef.listAll()
+            
+            // 모든 파일 삭제
+            for item in result.items {
+                try await item.delete()
+            }
+            
+            // 하위 폴더들도 재귀적으로 삭제
+            for prefix in result.prefixes {
+                try await deleteStoragePrefix(prefix)
+            }
+        } catch {
+            // Storage 삭제 실패는 로그만 남기고 에러를 던지지 않음
+            print("Storage 폴더 삭제 실패: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Storage 폴더 재귀 삭제 헬퍼 메서드
+    private func deleteStoragePrefix(_ prefix: StorageReference) async throws {
+        let result = try await prefix.listAll()
+        
+        for item in result.items {
+            try await item.delete()
+        }
+        
+        for subPrefix in result.prefixes {
+            try await deleteStoragePrefix(subPrefix)
+        }
+    }
+
     func fetchUniqueVisitedPlaces(userId: String) async throws -> [PlaceSummary] {
         let visitRecordsRef = db
             .collection("users")
@@ -266,6 +360,23 @@ extension StorageReference {
                     continuation.resume(throwing: error)
                 } else if let metadata = metadata {
                     continuation.resume(returning: metadata)
+                } else {
+                    continuation.resume(throwing: FirestoreError.uploadFailed)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Storage Reference 확장 (🆕 추가)
+extension StorageReference {
+    func listAll() async throws -> StorageListResult {
+        return try await withCheckedThrowingContinuation { continuation in
+            listAll { result, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let result = result {
+                    continuation.resume(returning: result)
                 } else {
                     continuation.resume(throwing: FirestoreError.uploadFailed)
                 }
