@@ -4,6 +4,12 @@
 <dict>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>내 주변 관광지를 보여주기 위해 위치 접근이 필요합니다</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>maps</string>
+        <string>http</string>
+        <string>https</string>
+    </array>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

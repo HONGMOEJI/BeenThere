@@ -8,13 +8,13 @@
 import UIKit
 import MapKit
 import Kingfisher
+import ObjectiveC
 
 class TourDetailView: UIView {
     // MARK: - UI Components
     let scrollView = UIScrollView()
     let contentView = UIView()
     
-    // 향상된 이미지 갤러리 (간단한 페이지뷰)
     let imageGalleryContainer = UIView()
     let imagePageView: UIScrollView
     let imagePageControl = UIPageControl()
@@ -29,24 +29,19 @@ class TourDetailView: UIView {
     let phoneLabel = UILabel()
     let homepageButton = UIButton(type: .system)
     
-    // 방문 횟수 표시 뷰 추가
     let visitCountView = VisitCountView()
-    
     let recordButton = UIButton(type: .system)
     let distLabel = UILabel()
     let separator = UIView()
-    
-    // 상세 정보 섹션들
     let detailInfoContainer = UIView()
-    let detailInfo2Container = UIView()
 
-    // MARK: - Gallery Data
     private var galleryImages: [TourSiteImage] = []
     private var imageViews: [UIImageView] = []
+    
+    // MARK: - Dynamic Constraints
+    private var dynamicConstraints: [NSLayoutConstraint] = []
 
-    // MARK: - Init
     override init(frame: CGRect) {
-        // 페이지뷰 스타일 스크롤뷰
         imagePageView = UIScrollView()
         imagePageView.isPagingEnabled = true
         imagePageView.showsHorizontalScrollIndicator = false
@@ -66,65 +61,47 @@ class TourDetailView: UIView {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
 
-        // 이미지 갤러리 컨테이너
         setupImageGallery()
 
-        // 이름
         nameLabel.font = .titleLarge
         nameLabel.textColor = .themeTextPrimary
         nameLabel.numberOfLines = 2
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // 타입
         typeLabel.font = .labelLarge
         typeLabel.textColor = .themeTextSecondary
         typeLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // 주소
         addressLabel.font = .bodyMedium
         addressLabel.textColor = .themeTextSecondary
         addressLabel.numberOfLines = 2
         addressLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // 거리
         distLabel.font = .captionLarge
         distLabel.textColor = .themeTextPlaceholder
         distLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // 설명
         descLabel.font = .bodyMedium
         descLabel.textColor = .themeTextPrimary
         descLabel.numberOfLines = 0
         descLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // 지도
         mapView.layer.cornerRadius = 12
-        mapView.isUserInteractionEnabled = false
+        mapView.isUserInteractionEnabled = true
         mapView.translatesAutoresizingMaskIntoConstraints = false
 
-        // 구분선
         separator.backgroundColor = .themeSeparator
         separator.translatesAutoresizingMaskIntoConstraints = false
 
-        // 전화번호
         setupPhoneStack()
-
-        // 홈페이지 버튼
         setupHomepageButton()
-        
-        // 방문 횟수 뷰 설정
         setupVisitCountView()
-        
-        // 기록 버튼
         setupRecordButton()
-        
-        // 상세 정보 컨테이너들
-        setupDetailInfoContainers()
+        setupDetailInfoContainer()
 
-        // 계층 구조
-        [imageGalleryContainer, nameLabel, typeLabel, addressLabel, distLabel, separator, mapView, descLabel, detailInfoContainer, detailInfo2Container, phoneStack, homepageButton, visitCountView, recordButton].forEach { contentView.addSubview($0) }
+        [imageGalleryContainer, nameLabel, typeLabel, addressLabel, distLabel, separator, mapView, descLabel, detailInfoContainer, phoneStack, homepageButton, visitCountView, recordButton].forEach { contentView.addSubview($0) }
 
-        setupConstraints()
+        setupStaticConstraints()
     }
     
     private func setupImageGallery() {
@@ -133,11 +110,9 @@ class TourDetailView: UIView {
         imageGalleryContainer.clipsToBounds = true
         imageGalleryContainer.backgroundColor = UIColor(white: 0.18, alpha: 1)
         
-        // 페이지뷰 (전체 영역 사용)
         imagePageView.translatesAutoresizingMaskIntoConstraints = false
         imagePageView.delegate = self
         
-        // 페이지 컨트롤 (오버레이 스타일)
         imagePageControl.translatesAutoresizingMaskIntoConstraints = false
         imagePageControl.currentPageIndicatorTintColor = .white
         imagePageControl.pageIndicatorTintColor = UIColor.white.withAlphaComponent(0.4)
@@ -149,13 +124,11 @@ class TourDetailView: UIView {
         imageGalleryContainer.addSubview(imagePageControl)
         
         NSLayoutConstraint.activate([
-            // 페이지뷰가 전체 컨테이너를 채움
             imagePageView.topAnchor.constraint(equalTo: imageGalleryContainer.topAnchor),
             imagePageView.leadingAnchor.constraint(equalTo: imageGalleryContainer.leadingAnchor),
             imagePageView.trailingAnchor.constraint(equalTo: imageGalleryContainer.trailingAnchor),
             imagePageView.bottomAnchor.constraint(equalTo: imageGalleryContainer.bottomAnchor),
             
-            // 페이지 컨트롤이 우하단에 오버레이
             imagePageControl.trailingAnchor.constraint(equalTo: imageGalleryContainer.trailingAnchor, constant: -16),
             imagePageControl.bottomAnchor.constraint(equalTo: imageGalleryContainer.bottomAnchor, constant: -16),
             imagePageControl.heightAnchor.constraint(equalToConstant: 24),
@@ -185,7 +158,6 @@ class TourDetailView: UIView {
         homepageButton.setTitle("홈페이지 바로가기", for: .normal)
         homepageButton.setTitleColor(.primaryBlue, for: .normal)
         homepageButton.titleLabel?.font = .buttonSmall
-        homepageButton.isHidden = true
         homepageButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -207,7 +179,6 @@ class TourDetailView: UIView {
         recordButton.alpha = 0.5
         recordButton.translatesAutoresizingMaskIntoConstraints = false
         
-        // 버튼 애니메이션 효과
         recordButton.addTarget(self, action: #selector(recordButtonPressed), for: .touchDown)
         recordButton.addTarget(self, action: #selector(recordButtonReleased), for: [.touchUpInside, .touchUpOutside, .touchCancel])
     }
@@ -224,46 +195,36 @@ class TourDetailView: UIView {
         }
     }
     
-    private func setupDetailInfoContainers() {
+    private func setupDetailInfoContainer() {
         detailInfoContainer.translatesAutoresizingMaskIntoConstraints = false
-        detailInfo2Container.translatesAutoresizingMaskIntoConstraints = false
-        
-        // 컨테이너 스타일
-        [detailInfoContainer, detailInfo2Container].forEach { container in
-            container.backgroundColor = UIColor(white: 0.05, alpha: 0.8)
-            container.layer.cornerRadius = 12
-            container.layer.borderWidth = 1
-            container.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
-        }
+        detailInfoContainer.backgroundColor = UIColor(white: 0.05, alpha: 0.8)
+        detailInfoContainer.layer.cornerRadius = 12
+        detailInfoContainer.layer.borderWidth = 1
+        detailInfoContainer.layer.borderColor = UIColor.white.withAlphaComponent(0.08).cgColor
     }
 
-    private func setupConstraints() {
+    private func setupStaticConstraints() {
         NSLayoutConstraint.activate([
-            // ScrollView를 Safe Area에 맞춤
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
 
-            // ContentView는 ScrollView에 맞춤
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
 
-            // 이미지 갤러리는 여백 추가하여 네비게이션 바와 겹치지 않도록
-            imageGalleryContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             imageGalleryContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             imageGalleryContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             imageGalleryContainer.heightAnchor.constraint(equalToConstant: 250),
 
-            nameLabel.topAnchor.constraint(equalTo: imageGalleryContainer.bottomAnchor, constant: 22),
             nameLabel.leadingAnchor.constraint(equalTo: imageGalleryContainer.leadingAnchor),
             nameLabel.trailingAnchor.constraint(equalTo: imageGalleryContainer.trailingAnchor),
 
-            typeLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 6),
             typeLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
+            typeLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 6),
 
             distLabel.centerYAnchor.constraint(equalTo: typeLabel.centerYAnchor),
             distLabel.trailingAnchor.constraint(equalTo: imageGalleryContainer.trailingAnchor),
@@ -273,70 +234,125 @@ class TourDetailView: UIView {
             addressLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
             addressLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
 
-            separator.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 16),
             separator.leadingAnchor.constraint(equalTo: addressLabel.leadingAnchor),
             separator.trailingAnchor.constraint(equalTo: addressLabel.trailingAnchor),
             separator.heightAnchor.constraint(equalToConstant: 1),
 
-            mapView.topAnchor.constraint(equalTo: separator.bottomAnchor, constant: 18),
             mapView.leadingAnchor.constraint(equalTo: imageGalleryContainer.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: imageGalleryContainer.trailingAnchor),
             mapView.heightAnchor.constraint(equalToConstant: 150),
 
-            descLabel.topAnchor.constraint(equalTo: mapView.bottomAnchor, constant: 22),
             descLabel.leadingAnchor.constraint(equalTo: mapView.leadingAnchor),
             descLabel.trailingAnchor.constraint(equalTo: mapView.trailingAnchor),
 
-            detailInfoContainer.topAnchor.constraint(equalTo: descLabel.bottomAnchor, constant: 20),
             detailInfoContainer.leadingAnchor.constraint(equalTo: descLabel.leadingAnchor),
             detailInfoContainer.trailingAnchor.constraint(equalTo: descLabel.trailingAnchor),
 
-            detailInfo2Container.topAnchor.constraint(equalTo: detailInfoContainer.bottomAnchor, constant: 15),
-            detailInfo2Container.leadingAnchor.constraint(equalTo: descLabel.leadingAnchor),
-            detailInfo2Container.trailingAnchor.constraint(equalTo: descLabel.trailingAnchor),
-
-            phoneStack.topAnchor.constraint(equalTo: detailInfo2Container.bottomAnchor, constant: 20),
             phoneStack.leadingAnchor.constraint(equalTo: descLabel.leadingAnchor),
 
-            homepageButton.topAnchor.constraint(equalTo: phoneStack.bottomAnchor, constant: 12),
             homepageButton.leadingAnchor.constraint(equalTo: phoneStack.leadingAnchor),
             homepageButton.trailingAnchor.constraint(equalTo: phoneStack.trailingAnchor),
 
-            // 방문 횟수 뷰
-            visitCountView.topAnchor.constraint(equalTo: homepageButton.bottomAnchor, constant: 20),
             visitCountView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             visitCountView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
 
-            // 기록 버튼
-            recordButton.topAnchor.constraint(equalTo: visitCountView.bottomAnchor, constant: 12),
             recordButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             recordButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             recordButton.heightAnchor.constraint(equalToConstant: 50),
-
-            // 하단 여백 추가하여 Safe Area 고려
-            recordButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -38)
         ])
     }
     
-    // MARK: - 이미지 갤러리 설정 (간단한 버전)
+    private func updateDynamicConstraints(hasImages: Bool, hasMap: Bool, hasDetailInfo: Bool, hasPhone: Bool, hasHomepage: Bool, hasVisitCount: Bool) {
+        NSLayoutConstraint.deactivate(dynamicConstraints)
+        dynamicConstraints.removeAll()
+        
+        var topAnchor: NSLayoutYAxisAnchor = contentView.topAnchor
+        var topConstant: CGFloat = 20
+        
+        if hasImages {
+            imageGalleryContainer.isHidden = false
+            dynamicConstraints.append(imageGalleryContainer.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+            topAnchor = imageGalleryContainer.bottomAnchor
+            topConstant = 22
+        } else {
+            imageGalleryContainer.isHidden = true
+        }
+        
+        dynamicConstraints.append(nameLabel.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+        topAnchor = addressLabel.bottomAnchor
+        topConstant = 16
+        
+        separator.isHidden = false
+        dynamicConstraints.append(separator.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+        topAnchor = separator.bottomAnchor
+        topConstant = 18
+        
+        if hasMap {
+            mapView.isHidden = false
+            dynamicConstraints.append(mapView.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+            topAnchor = mapView.bottomAnchor
+            topConstant = 22
+        } else {
+            mapView.isHidden = true
+        }
+        
+        dynamicConstraints.append(descLabel.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+        topAnchor = descLabel.bottomAnchor
+        topConstant = 20
+        
+        if hasDetailInfo {
+            detailInfoContainer.isHidden = false
+            dynamicConstraints.append(detailInfoContainer.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+            topAnchor = detailInfoContainer.bottomAnchor
+        } else {
+            detailInfoContainer.isHidden = true
+        }
+        
+        if hasPhone {
+            phoneStack.isHidden = false
+            dynamicConstraints.append(phoneStack.topAnchor.constraint(equalTo: topAnchor, constant: 20))
+            topAnchor = phoneStack.bottomAnchor
+            topConstant = 12
+        } else {
+            phoneStack.isHidden = true
+            topConstant = 20
+        }
+        
+        if hasHomepage {
+            homepageButton.isHidden = false
+            dynamicConstraints.append(homepageButton.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+            topAnchor = homepageButton.bottomAnchor
+            topConstant = 20
+        } else {
+            homepageButton.isHidden = true
+        }
+        
+        if hasVisitCount {
+            visitCountView.isHidden = false
+            dynamicConstraints.append(visitCountView.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+            topAnchor = visitCountView.bottomAnchor
+            topConstant = 12
+        } else {
+            visitCountView.isHidden = true
+        }
+        
+        dynamicConstraints.append(recordButton.topAnchor.constraint(equalTo: topAnchor, constant: topConstant))
+        dynamicConstraints.append(recordButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -38))
+        
+        NSLayoutConstraint.activate(dynamicConstraints)
+    }
+    
     private func setupImageGallery(with images: [TourSiteImage]) {
-        // 기존 이미지뷰들 제거
         imageViews.forEach { $0.removeFromSuperview() }
         imageViews.removeAll()
         
-        guard !images.isEmpty else {
-            imageGalleryContainer.isHidden = true
-            return
-        }
+        guard !images.isEmpty else { return }
         
-        imageGalleryContainer.isHidden = false
         imagePageControl.numberOfPages = images.count
         imagePageControl.currentPage = 0
         
-        // 페이지뷰 콘텐츠 크기 설정
         imagePageView.contentSize = CGSize(width: imagePageView.frame.width * CGFloat(images.count), height: imagePageView.frame.height)
         
-        // 각 이미지뷰 생성
         for (index, image) in images.enumerated() {
             let imageView = UIImageView()
             imageView.contentMode = .scaleAspectFill
@@ -375,127 +391,275 @@ class TourDetailView: UIView {
         imagePageView.contentSize = CGSize(width: pageWidth * CGFloat(imageViews.count), height: pageHeight)
     }
 
-    // MARK: - 데이터 적용 (개선된 버전 - 각 섹션 독립적 처리)
-    func configure(with detail: TourSiteDetail, images: [TourSiteImage] = [], infos: [DetailInfo] = []) {
-        // 기본 정보는 반드시 있어야 함
-        configureBasicInfo(with: detail)
-        
-        // 이미지 갤러리 - 실패해도 다른 섹션에 영향 없음
-        do {
-            setupImageGallery(with: images)
-            galleryImages = images
-        } catch {
-            print("이미지 갤러리 설정 실패: \(error)")
-            imageGalleryContainer.isHidden = true
-        }
-        
-        // 지도 - 좌표가 없으면 숨김
-        configureMap(with: detail)
-        
-        // 연락처 정보 - 없으면 숨김
-        configureContactInfo(with: detail)
-        
-        // 상세 정보 섹션들 - 데이터가 없으면 숨김
-        if !infos.isEmpty {
-            let halfCount = infos.count / 2
-            let detailInfo = Array(infos.prefix(halfCount))
-            let detailInfo2 = Array(infos.suffix(infos.count - halfCount))
-            
-            setupDetailInfoSection(container: detailInfoContainer, title: "상세 정보", infos: detailInfo)
-            setupDetailInfoSection(container: detailInfo2Container, title: "이용 안내", infos: detailInfo2)
-        } else {
-            detailInfoContainer.isHidden = true
-            detailInfo2Container.isHidden = true
+    // MARK: - 지도 탭 기능 관련 메서드
+    
+    // objc_setAssociatedObject 키 충돌 방지용 struct
+    private struct AssociatedKeys {
+        static var coordinate = "coordinate"
+        static var placeName = "placeName"
+    }
+    
+    // 지도에 탭 제스처 추가
+    private func setupMapTapGesture(coordinate: CLLocationCoordinate2D, placeName: String) {
+        // 기존 제스처 제거
+        mapView.gestureRecognizers?.forEach { mapView.removeGestureRecognizer($0) }
+
+        // 탭 제스처 추가
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(mapTapped))
+        mapView.addGestureRecognizer(tapGesture)
+
+        // 지도 위에 탭 안내 오버레이 추가
+        addMapTapOverlay()
+
+        // 좌표와 장소명 저장 (NSValue로 감싸서 저장)
+        let coordValue = NSValue(mkCoordinate: coordinate)
+        objc_setAssociatedObject(mapView, &AssociatedKeys.coordinate, coordValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(mapView, &AssociatedKeys.placeName, placeName, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+    
+    // 지도에 탭 안내 오버레이 추가
+    private func addMapTapOverlay() {
+        // 기존 오버레이 제거
+        mapView.subviews.filter { $0.tag == 9999 }.forEach { $0.removeFromSuperview() }
+
+        // 탭 안내 라벨 생성
+        let tapHintLabel = UILabel()
+        tapHintLabel.text = "탭하여 Apple 지도에서 보기"
+        tapHintLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        tapHintLabel.textColor = .white
+        tapHintLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        tapHintLabel.textAlignment = .center
+        tapHintLabel.layer.cornerRadius = 12
+        tapHintLabel.clipsToBounds = true
+        tapHintLabel.translatesAutoresizingMaskIntoConstraints = false
+        tapHintLabel.tag = 9999
+
+        mapView.addSubview(tapHintLabel)
+
+        NSLayoutConstraint.activate([
+            tapHintLabel.bottomAnchor.constraint(equalTo: mapView.bottomAnchor, constant: -12),
+            tapHintLabel.centerXAnchor.constraint(equalTo: mapView.centerXAnchor),
+            tapHintLabel.heightAnchor.constraint(equalToConstant: 28),
+            tapHintLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 160)
+        ])
+
+        tapHintLabel.alpha = 0
+        UIView.animate(withDuration: 0.3, delay: 0.5) {
+            tapHintLabel.alpha = 1
         }
     }
     
-    // MARK: - 방문 횟수 표시 업데이트
+    // 지도 탭 이벤트 처리
+    @objc private func mapTapped() {
+        guard
+            let coordValue = objc_getAssociatedObject(mapView, &AssociatedKeys.coordinate) as? NSValue,
+            let placeName = objc_getAssociatedObject(mapView, &AssociatedKeys.placeName) as? String
+        else {
+            return
+        }
+        let coordinate = coordValue.mkCoordinateValue
+
+        // 탭 애니메이션 (시각적 효과)
+        let overlayView = UIView(frame: mapView.bounds)
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        mapView.addSubview(overlayView)
+        UIView.animate(withDuration: 0.1, animations: {
+            overlayView.alpha = 1
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                overlayView.alpha = 0
+            } completion: { _ in
+                overlayView.removeFromSuperview()
+            }
+        }
+
+        openInAppleMaps(coordinate: coordinate, placeName: placeName)
+    }
+    
+    // Apple 지도 앱에서 위치 열기
+    private func openInAppleMaps(coordinate: CLLocationCoordinate2D, placeName: String) {
+        let query = placeName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlString = "http://maps.apple.com/?q=\(query)&ll=\(coordinate.latitude),\(coordinate.longitude)&z=16"
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+            UIApplication.shared.open(url, options: [:])
+        } else {
+            showMapOpenFailAlert()
+        }
+    }
+    
+    // 지도 앱을 열 수 없을 때 알림 표시
+    private func showMapOpenFailAlert() {
+        guard let viewController = findViewController() else { return }
+        let alert = UIAlertController(
+            title: "지도 앱을 열 수 없습니다",
+            message: "Apple 지도 앱을 사용할 수 없습니다. 기기 설정을 확인해주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        viewController.present(alert, animated: true)
+    }
+    
+    // 현재 뷰의 뷰컨트롤러 찾기
+    private func findViewController() -> UIViewController? {
+        var responder: UIResponder? = self
+        while let r = responder {
+            if let vc = r as? UIViewController { return vc }
+            responder = r.next
+        }
+        return nil
+    }
+
+    func configure(with detail: TourSiteDetail, images: [TourSiteImage] = [], infos: [DetailInfo] = []) {
+        configureBasicInfo(with: detail)
+        
+        setupImageGallery(with: images)
+        galleryImages = images
+        
+        let hasMap = configureMap(with: detail)
+        let (hasPhone, hasHomepage) = configureContactInfo(with: detail)
+        
+        let validInfos = filterValidDetailInfos(infos)
+        let hasDetailInfo = !validInfos.isEmpty
+        if hasDetailInfo {
+            setupDetailInfoSection(container: detailInfoContainer, title: "상세 정보", infos: validInfos)
+        }
+        
+        updateDynamicConstraints(
+            hasImages: !images.isEmpty,
+            hasMap: hasMap,
+            hasDetailInfo: hasDetailInfo,
+            hasPhone: hasPhone,
+            hasHomepage: hasHomepage,
+            hasVisitCount: false
+        )
+    }
+    
+    private func filterValidDetailInfos(_ infos: [DetailInfo]) -> [DetailInfo] {
+        return infos.filter { info in
+            let hasValidName = !(info.infoname?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+            let hasValidText = !(info.infotext?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+            return hasValidName && hasValidText
+        }
+    }
+    
     func updateVisitCount(count: Int, message: String) {
+        let hasVisitCount = !message.isEmpty
         visitCountView.configure(count: count, message: message)
         
-        // 기록 버튼 텍스트 업데이트
         if count > 0 {
             recordButton.setTitle("📝 새로운 기록 작성", for: .normal)
         } else {
             recordButton.setTitle("📝 기록하기", for: .normal)
         }
+        
+        updateDynamicConstraints(
+            hasImages: !galleryImages.isEmpty,
+            hasMap: !mapView.isHidden,
+            hasDetailInfo: !detailInfoContainer.isHidden,
+            hasPhone: !phoneStack.isHidden,
+            hasHomepage: !homepageButton.isHidden,
+            hasVisitCount: hasVisitCount
+        )
     }
     
     private func setupDetailInfoSection(container: UIView, title: String, infos: [DetailInfo]) {
-        // 기존 서브뷰 제거
         container.subviews.forEach { $0.removeFromSuperview() }
-        
-        guard !infos.isEmpty else {
-            container.isHidden = true
-            return
-        }
-        
-        container.isHidden = false
         
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.spacing = 12
+        stackView.spacing = 16
         stackView.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(stackView)
         
-        // 섹션 타이틀
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .headlineLarge
+        titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         titleLabel.textColor = .themeTextPrimary
         stackView.addArrangedSubview(titleLabel)
         
-        // 구분선
         let divider = UIView()
         divider.backgroundColor = .themeSeparator
         divider.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(divider)
         
-        // 정보 아이템들
-        for info in infos {
-            let itemView = createInfoItemView(info: info)
-            stackView.addArrangedSubview(itemView)
+        let gridStackView = UIStackView()
+        gridStackView.axis = .vertical
+        gridStackView.spacing = 12
+        gridStackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(gridStackView)
+        
+        for i in stride(from: 0, to: infos.count, by: 2) {
+            let rowStackView = UIStackView()
+            rowStackView.axis = .horizontal
+            rowStackView.distribution = .fillEqually
+            rowStackView.spacing = 16
+            rowStackView.translatesAutoresizingMaskIntoConstraints = false
+            
+            let firstItem = createCompactInfoItemView(info: infos[i])
+            rowStackView.addArrangedSubview(firstItem)
+            
+            if i + 1 < infos.count {
+                let secondItem = createCompactInfoItemView(info: infos[i + 1])
+                rowStackView.addArrangedSubview(secondItem)
+            } else {
+                let emptyView = UIView()
+                rowStackView.addArrangedSubview(emptyView)
+            }
+            
+            gridStackView.addArrangedSubview(rowStackView)
         }
         
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
-            stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            stackView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16),
+            stackView.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+            stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+            stackView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
             
             divider.heightAnchor.constraint(equalToConstant: 1)
         ])
     }
     
-    private func createInfoItemView(info: DetailInfo) -> UIView {
+    private func createCompactInfoItemView(info: DetailInfo) -> UIView {
         let containerView = UIView()
+        containerView.backgroundColor = UIColor.white.withAlphaComponent(0.03)
+        containerView.layer.cornerRadius = 8
+        containerView.layer.borderWidth = 1
+        containerView.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
+        
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         
         let nameLabel = UILabel()
-        nameLabel.font = .labelLarge
+        nameLabel.font = .systemFont(ofSize: 12, weight: .medium)
         nameLabel.textColor = .themeTextSecondary
         nameLabel.text = info.infoname?.removeHTMLTags()
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        nameLabel.textAlignment = .center
+        nameLabel.numberOfLines = 1
         
         let valueLabel = UILabel()
-        valueLabel.font = .bodyMedium
+        valueLabel.font = .systemFont(ofSize: 14, weight: .semibold)
         valueLabel.textColor = .themeTextPrimary
         valueLabel.text = info.infotext?.removeHTMLTags()
-        valueLabel.numberOfLines = 0
-        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.textAlignment = .center
+        valueLabel.numberOfLines = 2
         
-        containerView.addSubview(nameLabel)
-        containerView.addSubview(valueLabel)
+        stackView.addArrangedSubview(nameLabel)
+        stackView.addArrangedSubview(valueLabel)
+        
+        containerView.addSubview(stackView)
         
         NSLayoutConstraint.activate([
-            nameLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-            nameLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            nameLabel.widthAnchor.constraint(lessThanOrEqualTo: containerView.widthAnchor, multiplier: 0.3),
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
+            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             
-            valueLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-            valueLabel.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 12),
-            valueLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            valueLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+            containerView.heightAnchor.constraint(greaterThanOrEqualToConstant: 60)
         ])
         
         return containerView
@@ -507,11 +671,9 @@ class TourDetailView: UIView {
         nameLabel.font = .headlineLarge
         nameLabel.textColor = .themeTextSecondary
         
-        // 모든 다른 요소들 숨기기
-        [typeLabel, addressLabel, descLabel, mapView, phoneStack, homepageButton, recordButton, imageGalleryContainer, separator, detailInfoContainer, detailInfo2Container, visitCountView].forEach { $0.isHidden = true }
+        [typeLabel, addressLabel, descLabel, mapView, phoneStack, homepageButton, recordButton, imageGalleryContainer, separator, detailInfoContainer, visitCountView].forEach { $0.isHidden = true }
     }
     
-    // MARK: - 각 섹션 개별 처리를 위한 헬퍼 메서드들
     private func configureBasicInfo(with detail: TourSiteDetail) {
         nameLabel.text = detail.title
         nameLabel.textAlignment = .left
@@ -519,61 +681,55 @@ class TourDetailView: UIView {
         nameLabel.textColor = .themeTextPrimary
         
         typeLabel.text = APIConstants.ContentTypes.name(for: Int(detail.contenttypeid ?? "") ?? 0)
-        typeLabel.isHidden = false
-        
         addressLabel.text = detail.fullAddress
-        addressLabel.isHidden = false
-        
         descLabel.text = detail.overview?.removeHTMLTags() ?? "설명이 제공되지 않습니다."
-        descLabel.isHidden = false
         
-        separator.isHidden = false
         distLabel.isHidden = true
     }
     
-    private func configureMap(with detail: TourSiteDetail) {
+    private func configureMap(with detail: TourSiteDetail) -> Bool {
         mapView.removeAnnotations(mapView.annotations)
         
-        if let lat = detail.latitude, let lng = detail.longitude {
-            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-            let ann = MKPointAnnotation()
-            ann.coordinate = coord
-            ann.title = detail.title
-            mapView.addAnnotation(ann)
-            let region = MKCoordinateRegion(center: coord, latitudinalMeters: 700, longitudinalMeters: 700)
-            mapView.setRegion(region, animated: false)
-            mapView.isHidden = false
-        } else {
-            mapView.isHidden = true
+        guard let lat = detail.latitude, let lng = detail.longitude else {
+            return false
         }
+        
+        let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+        let ann = MKPointAnnotation()
+        ann.coordinate = coord
+        ann.title = detail.title
+        mapView.addAnnotation(ann)
+        let region = MKCoordinateRegion(center: coord, latitudinalMeters: 700, longitudinalMeters: 700)
+        mapView.setRegion(region, animated: false)
+        
+        // 지도 탭 제스처 추가
+        setupMapTapGesture(coordinate: coord, placeName: detail.title ?? "")
+        
+        return true
     }
     
-    private func configureContactInfo(with detail: TourSiteDetail) {
-        // 전화번호
-        if let phone = detail.tel, !phone.isEmpty {
-            phoneStack.isHidden = false
-            phoneLabel.text = phone
-        } else {
-            phoneStack.isHidden = true
+    private func configureContactInfo(with detail: TourSiteDetail) -> (hasPhone: Bool, hasHomepage: Bool) {
+        let hasPhone = detail.tel != nil && !detail.tel!.isEmpty
+        let hasHomepage = detail.homepage?.htmlLinkToUrlAndTitle()?.url != nil
+        
+        if hasPhone {
+            phoneLabel.text = detail.tel
         }
 
-        // 홈페이지
-        if let homepage = detail.homepage?.htmlLinkToUrlAndTitle()?.url {
+        if hasHomepage, let homepage = detail.homepage?.htmlLinkToUrlAndTitle()?.url {
             homepageButton.setTitle("홈페이지 바로가기", for: .normal)
-            homepageButton.isHidden = false
             homepageButton.removeTarget(nil, action: nil, for: .allEvents)
             homepageButton.addAction(UIAction { _ in
                 if let url = URL(string: homepage) {
                     UIApplication.shared.open(url)
                 }
             }, for: .touchUpInside)
-        } else {
-            homepageButton.isHidden = true
         }
+        
+        return (hasPhone, hasHomepage)
     }
 }
 
-// MARK: - ScrollView Delegate (페이지 전환)
 extension TourDetailView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView == imagePageView else { return }
@@ -583,7 +739,6 @@ extension TourDetailView: UIScrollViewDelegate {
     }
 }
 
-// MARK: - 방문 횟수 표시 커스텀 뷰
 class VisitCountView: UIView {
     private let iconLabel = UILabel()
     private let messageLabel = UILabel()
@@ -622,7 +777,6 @@ class VisitCountView: UIView {
         containerView.addSubview(iconLabel)
         containerView.addSubview(messageLabel)
         
-        // 초기 높이 제약 조건 설정
         heightConstraint = heightAnchor.constraint(equalToConstant: 0)
         heightConstraint?.isActive = true
         
@@ -644,36 +798,27 @@ class VisitCountView: UIView {
     }
     
     func configure(count: Int, message: String) {
-        print("🎨 VisitCountView configure - count: \(count), message: \(message)")
-        
         let icons = ["🎉", "✨", "🏆", "👑"]
         let iconIndex = min(count - 1, icons.count - 1)
         iconLabel.text = count > 0 ? icons[max(0, iconIndex)] : ""
         messageLabel.text = message
         
-        // AutoLayout 업데이트
         heightConstraint?.isActive = false
         
         if message.isEmpty {
-            isHidden = true
             heightConstraint = heightAnchor.constraint(equalToConstant: 0)
         } else {
-            isHidden = false
             heightConstraint = heightAnchor.constraint(greaterThanOrEqualToConstant: 80)
         }
         
         heightConstraint?.isActive = true
         
-        // 애니메이션과 함께 레이아웃 업데이트
         UIView.animate(withDuration: 0.3) {
             self.superview?.layoutIfNeeded()
         }
-        
-        print("🎨 VisitCountView 설정 완료 - isHidden: \(isHidden)")
     }
 }
 
-// MARK: - String Extension (HTML 태그 제거)
 extension String {
     func removeHTMLTags() -> String {
         return self.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil)
