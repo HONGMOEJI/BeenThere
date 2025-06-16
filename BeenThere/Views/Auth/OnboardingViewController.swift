@@ -84,7 +84,7 @@ class OnboardingPageView: UIView {
 
     private func createFloatingDots() {
         let containerSize = UIScreen.main.bounds.width * 0.8
-        for i in 0..<12 {
+        for _ in 0..<12 {
             let dot = UIView()
             let size = CGFloat.random(in: 12...24)
             let x = CGFloat.random(in: 0...(containerSize - size))

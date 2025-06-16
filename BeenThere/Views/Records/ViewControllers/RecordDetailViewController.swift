@@ -90,7 +90,7 @@ class RecordDetailViewController: UIViewController {
             print("🎯 [DEBUG] onSaveCompletion 콜백 호출됨!")
             print("🎯 [DEBUG] 원본 제목: \(self?.record.placeTitle ?? "nil")")
             print("🎯 [DEBUG] 새 제목: \(updatedRecord.placeTitle)")
-            print("🎯 [DEBUG] 새 내용: \(updatedRecord.content ?? "없음")")
+            print("🎯 [DEBUG] 새 내용: \(updatedRecord.content)")
             print("🎯 [DEBUG] 새 평점: \(updatedRecord.rating)")
             
             guard let self = self else {

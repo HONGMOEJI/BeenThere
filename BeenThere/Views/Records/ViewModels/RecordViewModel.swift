@@ -95,8 +95,8 @@ class RecordViewModel: ObservableObject {
     // MARK: - Init
     convenience init(tourSite: TourSiteDetail) {
         self.init(
-            contentId: tourSite.contentid ?? "",
-            placeTitle: tourSite.title ?? "알 수 없는 장소",
+            contentId: tourSite.contentid,
+            placeTitle: tourSite.title,
             placeAddress: tourSite.fullAddress ?? "",
             mode: .create,
             originalRecord: nil

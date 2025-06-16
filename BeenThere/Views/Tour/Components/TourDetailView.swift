@@ -353,7 +353,7 @@ class TourDetailView: UIView {
         
         imagePageView.contentSize = CGSize(width: imagePageView.frame.width * CGFloat(images.count), height: imagePageView.frame.height)
         
-        for (index, image) in images.enumerated() {
+        for (_, image) in images.enumerated() {
             let imageView = UIImageView()
             imageView.contentMode = .scaleAspectFill
             imageView.clipsToBounds = true

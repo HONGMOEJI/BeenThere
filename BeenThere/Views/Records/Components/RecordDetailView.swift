@@ -392,7 +392,7 @@ class RecordDetailView: UIView {
         print("🔄 [VIEW DEBUG] RecordDetailView.configure 시작")
         print("🔄 [VIEW DEBUG] 스레드: \(Thread.isMainThread ? "Main" : "Background")")
         print("📍 [VIEW DEBUG] 장소: \(record.placeTitle)")
-        print("📝 [VIEW DEBUG] 내용: \(record.content ?? "없음")")
+        print("📝 [VIEW DEBUG] 내용: \(record.content)")
         print("⭐ [VIEW DEBUG] 평점: \(record.rating)")
         print("🏷️ [VIEW DEBUG] 태그 개수: \(record.tags.count)")
         print("🖼️ [VIEW DEBUG] 이미지 개수: \(record.imageUrls.count)")
