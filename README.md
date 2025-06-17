@@ -109,7 +109,7 @@ open BeenThere.xcworkspace
 
 1. [Firebase Console](https://console.firebase.google.com/)에서 새 프로젝트 생성
 2. `GoogleService-Info.plist` 파일 다운로드
-3. Xcode 프로젝트 루트에 파일 추가
+3. Xcode /Resources에 파일 추가
 4. Authentication, Firestore, Storage 서비스 활성화
 
 ### **API 키 설정**
