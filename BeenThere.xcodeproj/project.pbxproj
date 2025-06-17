@@ -181,7 +181,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 7PSA95JMUC;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BeenThere/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "내 주변 관광지를 보여주기 위해 위치 접근이 필요합니다";
@@ -209,7 +209,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 7PSA95JMUC;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BeenThere/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "내 주변 관광지를 보여주기 위해 위치 접근이 필요합니다";
