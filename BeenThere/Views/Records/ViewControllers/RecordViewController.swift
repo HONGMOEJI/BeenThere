@@ -226,8 +226,12 @@ class RecordViewController: UIViewController, UICollectionViewDataSource, UIColl
         button.layer.cornerRadius = 8
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
-        button.adjustsImageWhenHighlighted = false
-        button.showsTouchWhenHighlighted = false
+        if #available(iOS 15.0, *) {
+            // On iOS 15+, custom buttons ignore highlight by default; no action needed
+        } else {
+            button.adjustsImageWhenHighlighted = false
+            button.showsTouchWhenHighlighted = false
+        }
         button.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchDown)
         button.addTarget(self, action: #selector(buttonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         return button

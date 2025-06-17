@@ -121,7 +121,7 @@ class ProfileView: UIView {
         profileImageView.image = UIImage(systemName: "person.fill")
         profileImageView.tintColor = .themeTextSecondary
         
-        // 🆕 프로필 이미지 편집 버튼 디자인 개선
+        // 프로필 이미지 편집 버튼 디자인
         profileImageEditButton.translatesAutoresizingMaskIntoConstraints = false
         profileImageEditButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
         profileImageEditButton.tintColor = .systemBlue
@@ -283,7 +283,7 @@ class ProfileView: UIView {
             profileImageView.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor),
             profileImageView.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor),
             
-            // 🆕 편집 버튼 크기와 위치 조정
+            // 편집 버튼 크기와 위치
             profileImageEditButton.trailingAnchor.constraint(equalTo: profileImageContainer.trailingAnchor, constant: 2),
             profileImageEditButton.bottomAnchor.constraint(equalTo: profileImageContainer.bottomAnchor, constant: 2),
             profileImageEditButton.widthAnchor.constraint(equalToConstant: 20),
@@ -449,7 +449,7 @@ class ProfileView: UIView {
         if isUploading {
             profileImageLoadingIndicator.startAnimating()
             profileImageView.alpha = 0.7
-            // 🆕 업로드 중일 때 버튼 숨기기
+            // 업로드 중일 때 버튼 숨기기
             profileImageEditButton.alpha = 0.5
         } else {
             profileImageLoadingIndicator.stopAnimating()

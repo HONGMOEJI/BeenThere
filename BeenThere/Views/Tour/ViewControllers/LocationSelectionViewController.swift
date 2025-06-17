@@ -349,18 +349,30 @@ extension LocationSelectionViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         guard !(annotation is MKUserLocation) else { return nil }
-        
+
         let identifier = "LocationPin"
-        var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKPinAnnotationView
-        
-        if annotationView == nil {
-            annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-            annotationView?.canShowCallout = true
-            annotationView?.pinTintColor = UIColor(white: 0.85, alpha: 1.0)
+        let annotationView: MKAnnotationView
+        if #available(iOS 16.0, *) {
+            var markerView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
+            if markerView == nil {
+                markerView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                markerView?.canShowCallout = true
+                markerView?.markerTintColor = UIColor(white: 0.85, alpha: 1.0)
+            } else {
+                markerView?.annotation = annotation
+            }
+            annotationView = markerView!
         } else {
-            annotationView?.annotation = annotation
+            var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKPinAnnotationView
+            if pinView == nil {
+                pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                pinView?.canShowCallout = true
+                pinView?.pinTintColor = UIColor(white: 0.85, alpha: 1.0)
+            } else {
+                pinView?.annotation = annotation
+            }
+            annotationView = pinView!
         }
-        
         return annotationView
     }
 }

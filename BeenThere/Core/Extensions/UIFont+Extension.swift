@@ -63,7 +63,7 @@ extension UIFont {
     static let textFieldMedium = pretendard(size: 15, weight: .regular)
     
     // ────────────────────────────────────────────────────────────────────────────
-    // MARK: - MyRecords & RecordDetail 전용 폰트 (새로 추가)
+    // MARK: - MyRecords & RecordDetail 전용 폰트
     
     // 날짜 관련
     static let dateDisplayLarge = pretendard(size: 22, weight: .semiBold)     // 메인 날짜 표시
@@ -108,7 +108,7 @@ extension UIFont {
     static let ratingNumber = pretendard(size: 18, weight: .semiBold)        // 평점 숫자
     static let ratingLabel = pretendard(size: 12, weight: .regular)          // 평점 라벨
     
-    // MARK: - Dynamic Font Sizes (Custom)
+    // MARK: - Dynamic Font Sizes
     static func pretendardRegular(size: CGFloat) -> UIFont {
         return pretendard(size: size, weight: .regular)
     }

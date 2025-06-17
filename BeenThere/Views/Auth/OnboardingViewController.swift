@@ -451,7 +451,13 @@ class OnboardingViewController: UIViewController, UIScrollViewDelegate {
         skipButton.layer.cornerRadius = 16
         skipButton.titleLabel?.font = .pretendardRegular(size: 14)
         skipButton.setTitleColor(UIColor(white: 0.9, alpha: 1), for: .normal)
-        skipButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        if #available(iOS 15.0, *) {
+            var config = skipButton.configuration ?? UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
+            skipButton.configuration = config
+        } else {
+            skipButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        }
         skipButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(skipButton)
     }

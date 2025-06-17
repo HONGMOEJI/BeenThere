@@ -25,7 +25,7 @@ class MainViewController: UIViewController {
         setupActions()
         setupBindings()
         setupCategoryButtons()
-        Task { await viewModel.loadInitialData() }
+        viewModel.loadInitialData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -107,7 +107,7 @@ class MainViewController: UIViewController {
             
         viewModel.$isLoadingMore
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isLoadingMore in
+            .sink { isLoadingMore in
                 print("📱 isLoadingMore 상태 변경: \(isLoadingMore)")
                 // 필요시 추가 로딩 인디케이터 처리
             }

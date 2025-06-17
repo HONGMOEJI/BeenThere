@@ -2,7 +2,7 @@
 //  FirestoreService.swift
 //  BeenThere
 //
-//  방문 기록 파이어스토어 서비스 (프로필 이미지 업로드 기능 추가)
+//  방문 기록 파이어스토어 서비스
 //
 
 import Foundation
@@ -48,7 +48,7 @@ final class FirestoreService {
             .collection("visitRecords")
             .document(visitId)
 
-        try await recordRef.setData(from: updatedRecord, merge: true)
+        try recordRef.setData(from: updatedRecord, merge: true)
     }
 
     func updateVisitRecord(userId: String, originalRecord: VisitRecord, updatedRecord: VisitRecord, newImages: [UIImage] = []) async throws {
@@ -70,10 +70,10 @@ final class FirestoreService {
             .document(userId)
             .collection("visitRecords")
         if originalVisitId != newVisitId {
-            try await recordsRef.document(newVisitId).setData(from: finalRecord)
+            try recordsRef.document(newVisitId).setData(from: finalRecord)
             try await recordsRef.document(originalVisitId).delete()
         } else {
-            try await recordsRef.document(originalVisitId).setData(from: finalRecord, merge: true)
+            try recordsRef.document(originalVisitId).setData(from: finalRecord, merge: true)
         }
     }
 

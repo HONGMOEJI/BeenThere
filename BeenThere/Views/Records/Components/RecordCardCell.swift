@@ -80,7 +80,7 @@ class RecordCardCell: UICollectionViewCell {
         imageView.backgroundColor = UIColor(white: 0.1, alpha: 1)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
-        // 그라데이션 오버레이 (더 부드럽게)
+        // 그라데이션 오버레이
         gradientLayer.colors = [
             UIColor.clear.cgColor,
             UIColor.black.withAlphaComponent(0.1).cgColor,

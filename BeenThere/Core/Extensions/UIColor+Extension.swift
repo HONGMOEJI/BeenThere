@@ -2,24 +2,24 @@
 //  UIColor+Theme.swift
 //  BeenThere
 //
-//  앱 테마 색상 정의 (브랜드 + 그레이스케일)
+//  앱 테마 색상 정의
 //
 
 import UIKit
 
 extension UIColor {
     
-    // MARK: - Primary Brand Colors (기존)
+    // MARK: - Primary Brand Colors
     static let primaryBlue = UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 1.0)      // #3399FF
     static let primaryDark = UIColor(red: 0.1, green: 0.3, blue: 0.6, alpha: 1.0)      // #1A4D99
     static let primaryLight = UIColor(red: 0.8, green: 0.9, blue: 1.0, alpha: 1.0)     // #CCE5FF
     
-    // MARK: - Accent Colors (기존)
+    // MARK: - Accent Colors
     static let accentOrange = UIColor(red: 1.0, green: 0.6, blue: 0.2, alpha: 1.0)     // #FF9933
     static let accentGreen = UIColor(red: 0.2, green: 0.8, blue: 0.4, alpha: 1.0)      // #33CC66
     static let accentRed = UIColor(red: 1.0, green: 0.3, blue: 0.3, alpha: 1.0)        // #FF4D4D
     
-    // MARK: - Semantic Colors (시스템 적응형, 기존)
+    // MARK: - Semantic Colors
     static let textPrimary = UIColor.label
     static let textSecondary = UIColor.secondaryLabel
     static let textTertiary = UIColor.tertiaryLabel
@@ -32,7 +32,7 @@ extension UIColor {
     static let separatorPrimary = UIColor.separator
     static let separatorSecondary = UIColor.opaqueSeparator
     
-    // MARK: - Custom Adaptive Colors (기존)
+    // MARK: - Custom Adaptive Colors
     static let cardBackground = UIColor { traitCollection in
         return traitCollection.userInterfaceStyle == .dark
             ? UIColor(red: 0.15, green: 0.15, blue: 0.15, alpha: 1.0)
@@ -45,20 +45,18 @@ extension UIColor {
             : UIColor.black.withAlphaComponent(0.5)
     }
     
-    // MARK: - Status Colors (기존)
+    // MARK: - Status Colors
     static let successGreen = UIColor.systemGreen
     static let warningOrange = UIColor.systemOrange
     static let errorRed = UIColor.systemRed
     static let infoBlue = UIColor.systemBlue
-    
-    // MARK: - Border Colors (기존)
+
+    // MARK: - Border Colors
     static let borderLight = UIColor.systemGray5
     static let borderMedium = UIColor.systemGray4
     static let borderDark = UIColor.systemGray3
-    
-    
-    // ────────────────────────────────────────────────────────────────────────────
-    // MARK: - Grayscale Theme Colors (추가)
+
+    // MARK: - Grayscale Theme Colors
 
     /// 전체 화면 배경 (거의 검정에 가까운 진회색)
     static let themeBackground = UIColor(white: 0.10, alpha: 1)
@@ -96,8 +94,7 @@ extension UIColor {
     /// 구분선(color) – 입력 폼과 버튼 사이를 나누는 라인 색
     static let themeSeparator = UIColor(white: 0.60, alpha: 1)
     
-    // ────────────────────────────────────────────────────────────────────────────
-    // MARK: - MyRecords 화면 전용 색상 (새로 추가)
+    // MARK: - MyRecords 화면 전용 색상
     
     /// 카드 배경 색상 (MyRecords의 기록 카드들)
     static let themeCardBackground = UIColor(white: 0.12, alpha: 1)
@@ -136,8 +133,7 @@ extension UIColor {
     /// 새로고침 버튼 색상
     static let themeRefresh = UIColor.themeTextSecondary
     
-    // ────────────────────────────────────────────────────────────────────────────
-    // MARK: - RecordDetail 화면 전용 색상 (미리 추가)
+    // MARK: - RecordDetail 화면 전용 색상
     
     /// 상세 뷰 배경
     static let themeDetailBackground = UIColor(white: 0.08, alpha: 1)

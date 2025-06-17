@@ -71,8 +71,12 @@ class MainView: UIView {
         let icon = UIImage(systemName: "location.fill", withConfiguration: symbolConfig)
         button.setImage(icon, for: .normal)
         button.tintColor = Design.textPrimary
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -2, bottom: 0, right: 2)
-        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
+        if #available(iOS 15.0, *) {
+            // UIButtonConfiguration ignores edgeInsets on iOS 15+, no action needed
+        } else {
+            button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -2, bottom: 0, right: 2)
+            button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
+        }
         
         return button
     }()

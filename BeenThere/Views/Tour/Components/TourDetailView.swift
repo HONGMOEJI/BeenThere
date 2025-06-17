@@ -395,8 +395,8 @@ class TourDetailView: UIView {
     
     // objc_setAssociatedObject 키 충돌 방지용 struct
     private struct AssociatedKeys {
-        static var coordinate = "coordinate"
-        static var placeName = "placeName"
+        static var coordinateKey: UInt8 = 0
+        static var placeNameKey: UInt8 = 0
     }
     
     // 지도에 탭 제스처 추가
@@ -413,8 +413,8 @@ class TourDetailView: UIView {
 
         // 좌표와 장소명 저장 (NSValue로 감싸서 저장)
         let coordValue = NSValue(mkCoordinate: coordinate)
-        objc_setAssociatedObject(mapView, &AssociatedKeys.coordinate, coordValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        objc_setAssociatedObject(mapView, &AssociatedKeys.placeName, placeName, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(mapView, &AssociatedKeys.coordinateKey, coordValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(mapView, &AssociatedKeys.placeNameKey, placeName, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
     
     // 지도에 탭 안내 오버레이 추가
@@ -452,8 +452,8 @@ class TourDetailView: UIView {
     // 지도 탭 이벤트 처리
     @objc private func mapTapped() {
         guard
-            let coordValue = objc_getAssociatedObject(mapView, &AssociatedKeys.coordinate) as? NSValue,
-            let placeName = objc_getAssociatedObject(mapView, &AssociatedKeys.placeName) as? String
+            let coordValue = objc_getAssociatedObject(mapView, &AssociatedKeys.coordinateKey) as? NSValue,
+            let placeName = objc_getAssociatedObject(mapView, &AssociatedKeys.placeNameKey) as? String
         else {
             return
         }
@@ -703,7 +703,7 @@ class TourDetailView: UIView {
         mapView.setRegion(region, animated: false)
         
         // 지도 탭 제스처 추가
-        setupMapTapGesture(coordinate: coord, placeName: detail.title ?? "")
+        setupMapTapGesture(coordinate: coord, placeName: detail.title)
         
         return true
     }

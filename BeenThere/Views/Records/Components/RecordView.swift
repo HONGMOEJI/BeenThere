@@ -227,8 +227,12 @@ class RecordView: UIView {
             button.heightAnchor.constraint(equalToConstant: 44).isActive = true
             
             // 터치 상태에서도 배경색 변경 방지
-            button.adjustsImageWhenHighlighted = false
-            button.showsTouchWhenHighlighted = false
+            if #available(iOS 15.0, *) {
+                // iOS 15+ uses UIButtonConfiguration; default highlight behaviour is ignored
+            } else {
+                button.adjustsImageWhenHighlighted = false
+                button.showsTouchWhenHighlighted = false
+            }
             
             starButtons.append(button)
             ratingStackView.addArrangedSubview(button)
